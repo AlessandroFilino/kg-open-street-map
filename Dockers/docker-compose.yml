@@ -1,0 +1,11 @@
+version: "3.8"
+
+# creo una sola immagine per entrambi i nodi (base_node_image) basata sul Dockerfile
+
+services:
+  node1:
+    build:
+      context: . #directory base, con il . è la stessa del compose.yml
+      dockerfile: Dockerfile
+    container_name: "PostgreSQL"
+    command: "tail -F anything"
