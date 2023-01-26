@@ -1,0 +1,2 @@
+#ingore Directory postgresDB
+Dockers/postgresDB/postgres-data
