@@ -1,7 +1,7 @@
 version: "3.8"
 
 # creo una sola immagine per entrambi i nodi (base_node_image) basata sul Dockerfile
-
+name: kg-open-street-map
 services:
   postgres:
           image: postgres
