@@ -1,0 +1,2 @@
+#acces to psql database
+psql -h localhost --username "admin" --port 5432
