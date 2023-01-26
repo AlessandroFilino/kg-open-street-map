@@ -4,7 +4,7 @@ version: "3.8"
 name: kg-open-street-map
 services:
   postgres:
-          image: postgres
+          image: postgis/postgis
           restart: always
           environment:
             - POSTGRES_USER=admin
@@ -16,4 +16,15 @@ services:
           ports:
             - '5432:5432'
           volumes: 
-            - ./postgresDB/postgres-data:/var/lib/postgresql/data:rw
+            - ./postgresDB/postgres-data:/var/lib/postgresql/data
+  
+  ubuntu:
+          image: ubuntu
+          build:
+            #directory base, con il . è la stessa del compose.yml
+            context: . 
+            dockerfile: Dockerfile
+          volumes:
+            - ./scripts:/home/scripts
+          # modificanto l'entrypoint il container appena viene lanciato esegue lo script 
+          entrypoint: sh -c "/home/scripts/script_test.sh"    
