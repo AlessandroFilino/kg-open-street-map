@@ -1,6 +1,5 @@
 version: "3.8"
 
-# creo una sola immagine per entrambi i nodi (base_node_image) basata sul Dockerfile
 name: kg-open-street-map
 services:
   postgres:
@@ -9,7 +8,6 @@ services:
           environment:
             - POSTGRES_USER=admin
             - POSTGRES_PASSWORD=admin
-            - POSTGRES_DB=map
           logging:
             options:
               max-size: 10m
@@ -28,4 +26,4 @@ services:
           volumes:
             - ./scripts:/home/scripts
           # modificanto l'entrypoint il container appena viene lanciato esegue lo script 
-          entrypoint: sh -c "/home/scripts/script_test.sh"    
+          entrypoint: sh -c "/home/scripts/init.sh"    
