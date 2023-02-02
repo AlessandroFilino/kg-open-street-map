@@ -1,2 +1,2 @@
 #acces to psql database
-psql -h localhost -d "map" --username "admin" --port 5432
+psql -h postgres --username "admin" --port 5432
