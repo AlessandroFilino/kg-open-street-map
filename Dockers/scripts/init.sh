@@ -6,7 +6,7 @@
 CLEAN_INIT=false 
 
 #installazione e compilazione di sparqlify da src
-if [ "$CLEAN_INIT" = true ] && [ -d "/home/sparqlify" ];
+if [ "$CLEAN_INIT" = true ] || [ -d "/home/sparqlify" ];
 then 
     rm -fr /home/sparqlify
     git clone https://github.com/SmartDataAnalytics/Sparqlify /home/sparqlify
