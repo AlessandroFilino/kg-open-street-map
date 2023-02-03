@@ -20,12 +20,10 @@ mvn clean install
 cd /home/sparqlify/sparqlify-cli
 mvn assembly:assembly
 
-java -cp /home/sparqlify/sparqlify-cli/target/sparqlify-cli-0.9.1-jar-with-dependencies.jar \ RunEndpoint $@
+java -cp /home/sparqlify/sparqlify-cli/target/sparqlify-cli-0.9.1-jar-with-dependencies.jar \
+ RunEndpoint $@
 
 #osmosis --read-apidb database="map" user="admin" password="admin" --write-xml file="./../map/florence-partial.osm"
-
-
-
 
 
 # comando che genera errore e tiene aperto il container dopo il compose up
