@@ -11,9 +11,6 @@ then
     rm -fr /home/sparqlify
     git clone https://github.com/SmartDataAnalytics/Sparqlify /home/sparqlify
     cp -fr ./Main.java /home/sparqlify/sparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
-else
-    git clone https://github.com/SmartDataAnalytics/Sparqlify /home/sparqlify
-    cp -fr ./Main.java /home/sparqlify/sparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
 fi
 
 cd /home/sparqlify
