@@ -16,7 +16,6 @@ then
     tar xvfz /home/osmosis/osmosis-0.48.3.tgz
     rm /home/osmosis/osmosis-0.48.3.tgz
     chmod a+x bin/osmosis
-    export osmosis=bin/osmosis
     rm -fr /home/sparqlify
     git clone https://github.com/SmartDataAnalytics/Sparqlify /home/sparqlify
     cp -fr ./Main.java lssparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
