@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #comandi per connettersi al database sul container : "postgres"
 #psql postgresql://user:psw@ip:port/db_name
 #psql postgresql://admin:admin@postgres:5432/postgres
@@ -21,15 +21,11 @@ then
     cp -fr ./Main.java lssparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
     cd /home/sparqlify
     echo 
-    mvn clean install
+    mvn clean install 
     cd /home/sparqlify/sparqlify-cli
-    mvn assembly:assembly
+    mvn assembly:assembly || true
 fi
 
 
 
-#osmosis --read-apidb database="map" user="admin" password="admin" --write-xml file="./../map/florence-partial.osm"
 
-
-# comando che genera errore e tiene aperto il container dopo il compose up
- tail -F anything 

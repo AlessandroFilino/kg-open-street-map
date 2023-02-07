@@ -1,5 +1,8 @@
 #acces to psql database
 psql -h postgres --username "admin" --port 5432
 
+#per creare database
+CREATE DATABASE name;
+
 #Prima di lanciare gli script in osmosis, avvia il server in locale con:
 service postgresql start
