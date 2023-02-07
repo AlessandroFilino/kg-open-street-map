@@ -18,9 +18,8 @@ then
     chmod a+x bin/osmosis
     rm -fr /home/sparqlify
     git clone https://github.com/SmartDataAnalytics/Sparqlify /home/sparqlify
-    cp -fr ./Main.java lssparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
-    cd /home/sparqlify
-    echo 
+    cp -fr home/scripts/Main.java /home/sparqlify/sparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
+    cd home/sparqlify
     mvn clean install 
     cd /home/sparqlify/sparqlify-cli
     mvn assembly:assembly || true
