@@ -9,4 +9,7 @@ psql postgresql://admin:admin@postgres:5432/admin -c 'CREATE DATABASE maps;'
 psql postgresql://admin:admin@postgres:5432/maps -c 'CREATE EXTENSION postgis; CREATE EXTENSION hstore;'
 psql postgresql://admin:admin@postgres:5432/maps -f /home/scripts/tools/osmosis/script/pgsimple_schema_0.6.sql
 
-/home/scripts/tools/osmosis/bin/osmosis --read-pbf /home/maps/corse-latest.osm.pbf --log-progress --write-pgsimp host=postgres database=maps user=admin password=admin
+# /home/scripts/tools/osmosis/bin/osmosis --read-pbf /home/maps/corse-latest.osm.pbf --log-progress --write-pgsimp host=postgres database=maps user=admin password=admin
+/home/scripts/tools/osmosis/bin/osmosis --read-xml /home/maps/map.osm --log-progress --write-pgsimp host=postgres database=maps user=admin password=admin
+
+psql postgresql://admin:admin@postgres:5432/maps -f /home/scripts/tools/sparqlify_scripts/install/performance_optimization.sql

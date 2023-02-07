@@ -6,7 +6,7 @@ WORKDIR /home
 
 RUN apt-get update && apt-get install -y
 RUN apt-get install postgresql -y
-RUN apt install default-jdk
+RUN apt-get install default-jdk -y
 # RUN apt-get install wget -y
 # RUN apt-get install git -y
 # RUN apt-get install maven -y

@@ -19,12 +19,18 @@ fi
 if [ "$CLEAN_INIT" = true ] || [ ! -d "./sparqlify" ];
 then 
     git clone https://github.com/SmartDataAnalytics/Sparqlify ./sparqlify
-    cp -fr ../../setup/Main.java ./sparqlify/sparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
+    cp -fr ./../../setup/Main.java ./sparqlify/sparqlify-cli/src/main/java/org/aksw/sparqlify/web/Main.java
     cd ./sparqlify
-    mvn clean install || true
-    cd ./sparqlify/sparqlify-cli
-    mvn assembly:assembly || true
+    mvn clean install
+    cd ./sparqlify-cli
+    mvn assembly:assembly
 fi
-
-
+#setup osm2km4c sparqlify
+if [ "$CLEAN_INIT" = true ] || [ ! -d "./sparqlify_scripts" ];
+then 
+    git clone https://github.com/disit/osm2km4c ./sparqlify_scripts/tmp
+    cp -r ./sparqlify_scripts/tmp/sparqlify/* ./sparqlify_scripts
+    chmod +w ./sparqlify_scripts/tmp
+    rm -fr ./sparqlify_scripts/tmp 
+fi
 
