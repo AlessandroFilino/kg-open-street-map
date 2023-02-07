@@ -5,6 +5,7 @@ services:
   postgres:
           image: postgis/postgis
           restart: always
+          shm_size: 1g
           environment:
             - POSTGRES_USER=admin
             - POSTGRES_PASSWORD=admin

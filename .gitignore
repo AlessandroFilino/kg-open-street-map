@@ -2,3 +2,4 @@
 Dockers/postgresDB/postgres-data
 Dockers/maps/*.pbf
 .DS_Store
+Dockers/scripts/tools/*
