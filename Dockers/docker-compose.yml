@@ -3,7 +3,7 @@ version: "3.8"
 name: kg-open-street-map
 services:
   postgres:
-          image: postgis/postgis
+          image: postgres:9.6
           restart: always
           shm_size: 1g
           environment:

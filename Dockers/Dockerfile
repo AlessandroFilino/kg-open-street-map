@@ -6,10 +6,10 @@ WORKDIR /home
 
 RUN apt-get update && apt-get install -y
 RUN apt-get install postgresql -y
-RUN apt-get install default-jdk -y
-# RUN apt-get install wget -y
+RUN apt-get install openjdk-8-jdk -y
+RUN apt-get install wget -y
 # RUN apt-get install git -y
-# RUN apt-get install maven -y
+RUN apt-get install maven -y
 # RUN mkdir ./osmosis
 # RUN wget -P ./osmosis https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz 
 # RUN tar xvfz ./osmosis/osmosis-0.48.3.tgz -C ./osmosis
