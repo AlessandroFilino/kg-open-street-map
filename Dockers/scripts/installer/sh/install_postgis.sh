@@ -1,1 +1,0 @@
-psql postgresql://admin:admin@postgres:5432/maps -c 'CREATE EXTENSION postgis; CREATE EXTENSION hstore;'
