@@ -7,3 +7,4 @@ Dockers/scripts/tools/*
 Dockers/scripts/*.zip
 Dockers/virtuoso_data/*
 .vscode
+.DS_Store

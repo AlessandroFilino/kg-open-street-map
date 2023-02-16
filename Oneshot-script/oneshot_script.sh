@@ -8,6 +8,6 @@ wget -P ./kg-open-street-map-1.0.0/Dockers/scripts/ https://github.com/Alessandr
 wget -P ./kg-open-street-map-1.0.0/Dockers/maps https://download.geofabrik.de/europe/italy/centro-latest.osm.pbf 
 cd ./kg-open-street-map-1.0.0/Dockers/
 docker compose up -d
-docker exec -it kg-open-street-map-ubuntu-1 /home/scripts/init.sh
-docker exec -it kg-open-street-map-ubuntu-1 /home/scripts/load_map.sh
-docker exec -it kg-open-street-map-ubuntu-1 /home/scripts/irdbcmap.sh
+docker exec -it kg-open-street-map-ubuntu-1 sh -c /home/scripts/init.sh
+docker exec -it kg-open-street-map-ubuntu-1 sh -c /home/scripts/load_map.sh
+docker exec -it kg-open-street-map-ubuntu-1 sh -c /home/scripts/irdbcmap.sh
