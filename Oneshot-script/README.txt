@@ -16,4 +16,6 @@ in alternativa i passi da compiere sono:
         -c) irdbcmap.sh
     
 Una volta terminati, gli scripts dovrebbero generare un file (42602.n3) contenente le triple in kg-open-street-map-1.0.0/Dockers/maps/centro-latest/
-Questo può essere caricato sul container contenente virtuoso (ACCOUNT dba PSW admin)
+(NB: load_map e in particolare irdbcmap richiedono molto tempo per eseguire)
+
+Il file .n3 può essere caricato sul container contenente virtuoso (ACCOUNT : dba ; PSW : admin) tramite interfaccia browser (http://localhost:8890/) o con isql.
