@@ -1,21 +1,22 @@
+Requisiti:
+    -centro-latest.osm.pbf presente in /Dockers/maps/
+    -sparqlify.zip presente in /Dockers/scripts/
+
+Mappe disponibili per la triplificazione : centro-latest(da geofrabik) 
+per cambiare:
+    -aggiungere mappa.pbf in maps 
+    -creare una cartella in /maps/mappa_da_aggiungere
+    -aggiornare le directory in load_map.sh
+
+Caso specifico : Firenze (OSM_ID : 42602)
+per cambiare:
+    -modificare l'OSM_ID in irdbcmap.sql
+
+
 Istruzioni per triplificazione : 
-    -copiare sparqlify (della VM) in Dockers/scripts/tools/
-    -copiare centro-latest.osm.pbf in Dockers/maps/
     -fare il compose up dei docker
-    -collegarsi al container di postgres
-    -eseguire i seguenti comandi: 
-        -apt-get update
-        -apt-get install --no-install-recommends -y postgresql-9.6-postgis-2.3 postgresql-9.6-postgis-2.3-scripts
-        -apt-get clean 
-        -rm -rf /var/lib/apt/lists/*
-    -collegarsi al container con ubuntu
+    -collegarsi ad una shell del container con ubuntu
     -eseguire nella cartella /home/scripts in ordine:
-        -install_osmosis.sh
         -init.sh
-    Scegliere se eseguire la versione nuova o quella vecchia
-    [vecchia versione] entrare in old_version ed eseguire in ordine:
         -load_map.sh
-        -triplify.sh
-    [nuova versione] entrare in new_version ed eseguire in ordine:
-        -load_mapV2.sh
         -irdbcmap.sh
