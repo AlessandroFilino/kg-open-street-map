@@ -22,7 +22,7 @@
 drop table if exists extra_config_boundaries; 
 
 create table extra_config_boundaries as 
-select * from extra_all_boundaries where relation_id in (42288); --CAPRAIA
+select * from extra_all_boundaries where relation_id in (42621); --MONTEMIGNANO
 
 create index extra_config_boundaries_index_1 on extra_config_boundaries using gist(boundary);
 

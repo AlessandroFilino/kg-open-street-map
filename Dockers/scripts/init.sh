@@ -2,6 +2,17 @@
 
 #!/bin/sh
 
+if [ ! -d ./tools ];
+    then
+        mkdir -p ./tools/osmosis
+        wget -P ./tools/osmosis https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz 
+        tar xvfz ./tools/osmosis/osmosis-0.48.3.tgz -C ./tools/osmosis
+        rm ./tools/osmosis/osmosis-0.48.3.tgz
+        chmod a+x ./tools/osmosis/bin/osmosis
+        unzip ./sparqlify.zip -d ./tools/
+    fi
+
+
 chmod -R 777 /home/scripts/
 chmod -R 777 /home/maps/
 

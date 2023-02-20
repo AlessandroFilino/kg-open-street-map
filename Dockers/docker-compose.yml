@@ -29,6 +29,7 @@ services:
           dockerfile: Dockerfile_ubuntu
         volumes:
           - ./maps:/home/maps
+          - ./scripts:/home/scripts
         command: tail -F anything
         # modificanto l'entrypoint il container appena viene lanciato esegue lo script 
         # entrypoint: sh -c "/home/scripts/init.sh"    
