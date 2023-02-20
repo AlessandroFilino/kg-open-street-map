@@ -2,6 +2,7 @@
 Dockers/postgresDB/postgres-data
 Dockers/maps/*.pbf
 Dockers/maps/*.osm
+*.n3
 Dockers/maps/*/*.txt
 .DS_Store
 Dockers/scripts/tools/*
