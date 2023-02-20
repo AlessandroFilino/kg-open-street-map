@@ -22,7 +22,7 @@
 drop table if exists extra_config_boundaries; 
 
 create table extra_config_boundaries as 
-select * from extra_all_boundaries where relation_id in (42602); --FIRENZE
+select * from extra_all_boundaries where relation_id in (42288); --CAPRAIA
 
 create index extra_config_boundaries_index_1 on extra_config_boundaries using gist(boundary);
 
@@ -39,7 +39,7 @@ id serial primary key,
 graph_uri varchar(255)
 );
 
-insert into extra_config_graph(graph_uri) values ('http://www.disit.org/km4city/resource/OSM/florence'); 
+insert into extra_config_graph(graph_uri) values ('http://www.disit.org/km4city/resource/OSM/capraia'); 
 
 -- Utilizzo dei numeri civici della Regione Toscana piuttosto che nativi di OSM
 
