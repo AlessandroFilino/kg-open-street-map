@@ -43,10 +43,10 @@ services:
             - '8890:8890'
           volumes: 
             - ./virtuoso_data:/database
-  pgadmin:
-          image: dpage/pgadmin4:4.0
-          environment:
-            - PGADMIN_DEFAULT_EMAIL=test@gmail.com
-            - PGADMIN_DEFAULT_PASSWORD=admin
-          ports:
-            - "5050:80"
+  #pgadmin:
+  #        image: dpage/pgadmin4:4.0
+  #        environment:
+  #          - PGADMIN_DEFAULT_EMAIL=test@gmail.com
+  #          - PGADMIN_DEFAULT_PASSWORD=admin
+  #        ports:
+  #          - "5050:80"

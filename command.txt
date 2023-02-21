@@ -6,3 +6,16 @@ CREATE DATABASE name;
 
 #Prima di lanciare gli script in osmosis, avvia il server in locale con:
 service postgresql start
+
+
+#CREAZIONE DI UNA VIEW CHE CONTENGA GLI ID DEI NODI CON ALMENO UN INCROCIO
+CREATE OR REPLACE VIEW intersection_node AS
+SELECT start_node
+FROM extra_ways
+GROUP BY start_node
+HAVING COUNT(start_node) > 1
+UNION
+SELECT end_node
+FROM extra_ways
+GROUP BY end_node
+HAVING COUNT(end_node) > 1;

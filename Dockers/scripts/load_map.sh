@@ -5,3 +5,4 @@ cd /home/maps/centro-latest/
 psql postgresql://admin:admin@postgres:5432/maps -f pgsimple_load_0.6.sql
 cd /home/scripts/
 psql postgresql://admin:admin@postgres:5432/maps  -f /home/scripts/performance_optimization.sql
+
