@@ -8,4 +8,5 @@ Dockers/maps/*/*.txt
 Dockers/scripts/tools/*
 Dockers/scripts/*.zip
 Dockers/virtuoso_data/*
+Working_n3/*.txt
 .vscode
