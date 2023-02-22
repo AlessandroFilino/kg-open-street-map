@@ -1,34 +1,10 @@
 #!/bin/bash
 
-grep '201906809' ./../Dockers/maps/tmp/*.n3 > extract.txt
+road_id='201906809'
 
-grep '201906801' ./../Dockers/maps/tmp/*.n3 > extract2.txt
+grep $road_id ./../Dockers/maps/tmp/*.n3 > $road_id.txt
 
 
-echo > cleaned.txt
+echo > "$road_id"_cleaned.txt
 
-echo > cleaned2.txt
-
-while read line;
-    do
-        cleaned=${line//'<http://www.disit.org/km4city/resource/OS00098463511RE/'/}
-        cleaned=${cleaned//'<*schema'/}
-        echo $cleaned >> cleaned.txt
-        if [[ "$cleaned" == *"#RoadElement>"* ]];
-        then
-            echo -e "\n" >> cleaned.txt
-        fi
-        
-    done < extract.txt
-
-while read line;
-    do
-        cleaned=${line//'<http://www.disit.org/km4city/resource/OS00098463511RE/'/}
-        cleaned=${cleaned//'<*schema'/}
-        echo $cleaned >> cleaned2.txt
-        if [[ "$cleaned" == *"#RoadElement>"* ]];
-        then
-            echo -e "\n" >> cleaned2.txt
-        fi
-        
-    done < extract2.txt
+python3 ./clean.py $road_id
