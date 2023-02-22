@@ -17,6 +17,12 @@
 -- CONFIGURAZIONE DELL'INSTALLAZIONE
 ------------------------------------
 
+
+
+
+
+
+
 -- Delimitazione geografica dell'installazione
 
 drop table if exists extra_config_boundaries; 
@@ -57,6 +63,39 @@ insert into extra_config_civic_num(civic_num_source) values ('Open Street Map');
 ************ TABELLE DI APPOGGIO ************
 *********************************************/
 
+-- TEST
+-- proviamo a rimuovere i nodi che non corrispondono ad incroci
+
+delete from way_nodes w1 
+where node_id in(select w2.node_id 
+from way_nodes w2
+except
+select w2.node_id
+from way_nodes w2
+inner join way_nodes w3 on w2.way_id != w3.way_id AND w2.node_id = w3.node_id);
+
+create or replace view tmp_view as
+select way_id,node_id,(row_number() over(partition by way_id order by sequence_id) -1)as sequence_id
+from way_nodes;
+
+select *
+into tmp_db
+from tmp_view;
+
+delete from way_nodes;
+
+insert into way_nodes
+select*
+from tmp_db;
+
+drop table tmp_db;
+drop view tmp_view;
+
+-- ____________________________________________________________
+
+
+
+
 -- Esplosione delle way
 
 drop table if exists extra_ways;
@@ -70,11 +109,16 @@ join nodes next_node on next_waynode.node_id = next_node.id
 join way_tags on prev_waynode.way_id = way_tags.way_id and way_tags.k = 'highway' and way_tags.v <> 'proposed'
 join extra_config_boundaries boundaries on ST_Covers(boundaries.boundary, next_node.geom);
 
+
+
 create index on extra_ways (global_id);
 
 create index on extra_ways using gist(start_node);
 
 create index on extra_ways using gist(end_node);
+
+
+
 
 -- Comuni di interesse
 

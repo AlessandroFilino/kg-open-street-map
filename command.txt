@@ -19,3 +19,37 @@ SELECT end_node
 FROM extra_ways
 GROUP BY end_node
 HAVING COUNT(end_node) > 1;
+
+
+
+
+Extra way nodi totali : 5957
+Extra way incroci totali : 295
+Extra way non incroci : 5662
+
+select *
+from extra_ways
+where not exists ( select distinct way_id, sequence_id
+from way_nodes
+inner join intersection_node ON  way_nodes.node_id=intersection_node.prev_node_id
+where way_id=global_id and sequence_id=local_id)
+
+
+
+
+//per mettere i nodi in sequenza
+create or replace view test as
+select way_id,node_id,(row_number() over(partition by way_id order by sequence_id) -1)as sequence_id
+from way_nodes;
+
+select *
+into tmp_db
+from test;
+
+delete from way_nodes;
+
+insert into way_nodes
+select*
+from tmp_db;
+
+drop table tmp_db;
