@@ -3,6 +3,11 @@
 #!/bin/sh
 chmod -R 777 /home/
 
+if [ ! -d "/home/scripts/tools/" ];
+    then
+        mkdir /home/scripts/tools/
+    fi
+
 cd /home/scripts/tools/
 
 if [ ! -d "./osmosis" ];
