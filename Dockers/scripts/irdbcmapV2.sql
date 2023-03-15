@@ -45,7 +45,7 @@ id serial primary key,
 graph_uri varchar(255)
 );
 
-insert into extra_config_graph(graph_uri) values ('http://www.disit.org/km4city/resource/OSM/capraia'); 
+insert into extra_config_graph(graph_uri) values ('http://www.disit.org/km4city/resource/OSM/montemignaio'); 
 
 -- Utilizzo dei numeri civici della Regione Toscana piuttosto che nativi di OSM
 
