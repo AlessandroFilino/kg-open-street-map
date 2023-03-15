@@ -1,25 +1,27 @@
 #SCRIPT PER PREPARARE IL DATABASA CON CARATTERISTICHE DA simple_schema
 
 #!/bin/sh
+chmod -R 777 /home/
 
-if [ ! -d home/scripts/tools/osmosis ];
+cd /home/scripts/tools/
+
+if [ ! -d "./osmosis" ];
     then
-        mkdir -p ./tools/osmosis
-        wget -P ./tools/osmosis https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz 
-        tar xvfz ./tools/osmosis/osmosis-0.48.3.tgz -C ./tools/osmosis
-        rm ./tools/osmosis/osmosis-0.48.3.tgz
-        chmod a+x ./tools/osmosis/bin/osmosis
-        unzip ./sparqlify.zip -d ./tools/
+        mkdir -p ./osmosis
+        wget -P ./osmosis https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz 
+        tar xvfz ./osmosis/osmosis-0.48.3.tgz -C ./osmosis
+        rm ./osmosis/osmosis-0.48.3.tgz
+        chmod a+x ./osmosis/bin/osmosis
     fi
 
-if [ ! -d home/scripts/tools/sparqlify ];
+if [ ! -d "./sparqlify" ];
     then
-        unzip ./sparqlify.zip -d ./tools/
+        unzip /home/scripts/sparqlify.zip -d ./
     fi
 
+cd /home/scripts/
 
-chmod -R 777 /home/scripts/
-chmod -R 777 /home/maps/
+
 
 
 psql postgresql://admin:admin@postgres:5432/admin -c 'DROP DATABASE maps_custom;'
