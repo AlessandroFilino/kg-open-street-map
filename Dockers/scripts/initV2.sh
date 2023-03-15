@@ -2,7 +2,7 @@
 
 #!/bin/sh
 
-if [ ! -d ./tools ];
+if [ ! -d home/scripts/tools ];
     then
         mkdir -p ./tools/osmosis
         wget -P ./tools/osmosis https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz 

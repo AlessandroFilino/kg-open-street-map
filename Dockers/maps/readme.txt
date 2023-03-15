@@ -1,1 +1,0 @@
-Inserisci le mappe di interesse.
