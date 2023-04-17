@@ -25,3 +25,6 @@ psql postgresql://admin:admin@postgres:5432/maps_custom -f /home/scripts/tools/o
 psql postgresql://admin:admin@postgres:5432/maps_custom -f /home/scripts/tools/osmosis/script/pgsimple_schema_0.6_action.sql
 psql postgresql://admin:admin@postgres:5432/maps_custom -f /home/scripts/tools/osmosis/script/pgsimple_schema_0.6_bbox.sql
 psql postgresql://admin:admin@postgres:5432/maps_custom -f /home/scripts/tools/osmosis/script/pgsimple_schema_0.6_linestring.sql
+
+./load_mapV2.sh
+./irdbcmapV2.sh
