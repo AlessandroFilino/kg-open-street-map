@@ -3,8 +3,11 @@ version: "3.8"
 name: kg-open-street-map
 services:
   postgres:
-          image: postgis/postgis
-          restart: always
+          # image: postgres:9.6
+          build:
+            #directory base, con il . è la stessa del compose.yml
+            context: . 
+            dockerfile: Dockerfile_postgres
           shm_size: 1g
           environment:
             - POSTGRES_USER=admin
@@ -19,14 +22,31 @@ services:
             - ./postgresDB/postgres-data:/var/lib/postgresql/data
   
   ubuntu:
-          image: ubuntu
-          build:
-            #directory base, con il . è la stessa del compose.yml
-            context: . 
-            dockerfile: Dockerfile
-          volumes:
-            - ./scripts:/home/scripts
-            - ./maps:/home/maps
-          command: tail -F anything
-          # modificanto l'entrypoint il container appena viene lanciato esegue lo script 
-          # entrypoint: sh -c "/home/scripts/init.sh"    
+        # image: ubuntu
+        build:
+          #directory base, con il . è la stessa del compose.yml
+          context: . 
+          dockerfile: Dockerfile_ubuntu
+        volumes:
+          - ./maps:/home/maps
+          - ./scripts:/home/scripts
+        command: tail -F anything
+        # modificanto l'entrypoint il container appena viene lanciato esegue lo script 
+        # entrypoint: sh -c "/home/scripts/init.sh"    
+
+  virtuoso:
+          image: openlink/virtuoso-opensource-7
+          environment:
+            - DBA_PASSWORD=admin
+          ports:
+            - '1111:1111'
+            - '8890:8890'
+          volumes: 
+            - ./virtuoso_data:/database
+  pgadmin:
+         image: dpage/pgadmin4:4.0
+         environment:
+           - PGADMIN_DEFAULT_EMAIL=test@gmail.com
+           - PGADMIN_DEFAULT_PASSWORD=admin
+         ports:
+           - "5050:80"

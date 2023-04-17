@@ -1,2 +1,0 @@
-psql postgresql://admin:admin@postgres:5432/maps -f /home/scripts/tools/sparqlify_scripts/irdbcmap.cfg.sql
-./sparqlify.sh -m ./tools/sparqlify_scripts/irdbcmap.sml -h postgres -d maps -U admin -W admin -o ntriples --dump > ./dirty.n3

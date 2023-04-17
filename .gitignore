@@ -1,5 +1,12 @@
 #ingore Directory postgresDB
 Dockers/postgresDB/postgres-data
 Dockers/maps/*.pbf
+Dockers/maps/*.osm
+*.n3
+Dockers/maps/*/*.txt
 .DS_Store
 Dockers/scripts/tools/*
+Dockers/scripts/*.zip
+Dockers/virtuoso_data/*
+Working_n3/*.txt
+.vscode
