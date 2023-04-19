@@ -1927,8 +1927,43 @@ join relation_tags r_type on r.relation_id = r_type.relation_id and r_type.k = '
 join relation_tags r_pedestrian on r.relation_id = r_pedestrian.relation_id and r_pedestrian.k = 'highway' and r_pedestrian.v = 'pedestrian'
 ;
 
---update RoadElementRoute
---set route=ST_MakeLine(ARRAY[ST_MakePoint(1,1), ST_MakePoint(2,2), ST_MakePoint(3,3)]);
+--TEST aggiornamento linestring
+drop table if exists test;
+drop table if exists test1;
+drop table if exists test2;
+drop table if exists test3;
+
+create table test as
+SELECT global_id, local_id, start_node AS points
+FROM all_extra_ways
+UNION
+SELECT p1.global_id,p1.local_id, p1.end_node AS points
+FROM all_extra_ways p1
+WHERE end_node NOT IN (SELECT p2.start_node FROM all_extra_ways p2 where p1.global_id = p2.global_id);
+
+
+create table test1 as
+select global_id, array_agg(points) as points
+from test
+group by global_id;
+
+
+create table test2 as 
+select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
+from test1 t1, extra_ways w1
+where t1.global_id = w1.global_id															 
+order by id;
+
+create table test3 as 
+select id, linestring 
+from test2																											 
+where linestring <> '';
+
+update roadelementroute r1
+set route = linestring
+from test3 t3
+where r1.id= t3.id
+
 
 /********** RoadElement.StartsAtNode **********/
 
