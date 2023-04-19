@@ -1928,12 +1928,8 @@ join relation_tags r_pedestrian on r.relation_id = r_pedestrian.relation_id and 
 ;
 
 --TEST aggiornamento linestring
-drop table if exists test;
-drop table if exists test1;
-drop table if exists test2;
-drop table if exists test3;
 
-create table test as
+create or replace view tmp_node_coord as
 SELECT global_id, local_id, start_node AS points
 FROM all_extra_ways
 UNION
@@ -1942,28 +1938,32 @@ FROM all_extra_ways p1
 WHERE end_node NOT IN (SELECT p2.start_node FROM all_extra_ways p2 where p1.global_id = p2.global_id);
 
 
-create table test1 as
+create or replace view tmp_way_array as
 select global_id, array_agg(points) as points
-from test
+from tmp_node_coord
 group by global_id;
 
 
-create table test2 as 
+create or replace view tmp_linestrings as 
 select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
-from test1 t1, extra_ways w1
+from tmp_way_array t1, extra_ways w1
 where t1.global_id = w1.global_id															 
 order by id;
 
-create table test3 as 
+create or replace view tmp_cleaned as 
 select id, linestring 
-from test2																											 
+from tmp_linestrings																											 
 where linestring <> '';
 
 update RoadElementRoute r1
 set route = linestring
-from test3 t3
+from tmp_cleaned t3
 where r1.id = t3.id;
 
+drop view tmp_node_coord cascade;
+drop view tmp_way_array cascade;
+drop view tmp_linestrings cascade;
+drop view tmp_cleaned cascade;
 
 /********** RoadElement.StartsAtNode **********/
 
