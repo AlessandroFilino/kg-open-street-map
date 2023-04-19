@@ -66,6 +66,10 @@ insert into extra_config_civic_num(civic_num_source) values ('Open Street Map');
 -- TEST
 -- proviamo a rimuovere i nodi che non corrispondono ad incroci
 
+drop table all_way_nodes;
+create table all_way_nodes as
+select * from way_nodes;
+
 delete from way_nodes w1 
 where node_id in(select w2.node_id 
 from way_nodes w2
@@ -117,6 +121,23 @@ create index on extra_ways using gist(start_node);
 
 create index on extra_ways using gist(end_node);
 
+
+drop table if exists all_extra_ways;
+
+create table all_extra_ways as
+select prev_waynode.way_id global_id, prev_waynode.sequence_id local_id, prev_node.geom start_node, next_node.geom end_node, prev_node.id prev_node_id, next_node.id next_node_id
+from all_way_nodes prev_waynode 
+join nodes prev_node on prev_waynode.node_id = prev_node.id
+join all_way_nodes next_waynode on prev_waynode.way_id = next_waynode.way_id and prev_waynode.sequence_id = next_waynode.sequence_id-1
+join nodes next_node on next_waynode.node_id = next_node.id
+join way_tags on prev_waynode.way_id = way_tags.way_id and way_tags.k = 'highway' and way_tags.v <> 'proposed'
+join extra_config_boundaries boundaries on ST_Covers(boundaries.boundary, next_node.geom);
+
+create index on all_extra_ways (global_id);
+
+create index on all_extra_ways using gist(start_node);
+
+create index on all_extra_ways using gist(end_node);
 
 
 
@@ -1905,6 +1926,9 @@ join relation_members r on ways.id = r.member_id and r.member_type = 'W'
 join relation_tags r_type on r.relation_id = r_type.relation_id and r_type.k = 'type' and r_type.v = 'multipolygon'
 join relation_tags r_pedestrian on r.relation_id = r_pedestrian.relation_id and r_pedestrian.k = 'highway' and r_pedestrian.v = 'pedestrian'
 ;
+
+--update RoadElementRoute
+--set route=ST_MakeLine(ARRAY[ST_MakePoint(1,1), ST_MakePoint(2,2), ST_MakePoint(3,3)]);
 
 /********** RoadElement.StartsAtNode **********/
 
