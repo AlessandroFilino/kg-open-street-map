@@ -1959,10 +1959,10 @@ select id, linestring
 from test2																											 
 where linestring <> '';
 
-update roadelementroute r1
+update RoadElementRoute r1
 set route = linestring
 from test3 t3
-where r1.id= t3.id
+where r1.id = t3.id;
 
 
 /********** RoadElement.StartsAtNode **********/
