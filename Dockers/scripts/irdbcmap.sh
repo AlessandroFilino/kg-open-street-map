@@ -1,8 +1,11 @@
 #!/bin/sh
 
-psql postgresql://admin:admin@postgres:5432/maps  -f /home/scripts/irdbcmap.sql
-/home/scripts/sparqlify.sh -m /home/scripts/irdbcmap.sml -h postgres -d maps -U admin -W admin -o ntriples --dump > /home/maps/montemignaio/42621.drt
-cd /home/maps/montemignaio/
-tail -n +3 42621.drt > 42621.cln 
-sort 42621.cln | uniq > 42621.n3 
-rm 42621.drt 42621.cln
+OSM_ID=$1
+RELATION_NAME=$2
+
+psql postgresql://admin:admin@postgres:5432/maps  -f /home/scripts/irdbcmap.sql -v OSM_ID=$OSM_ID
+/home/scripts/sparqlify.sh -m /home/scripts/irdbcmap.sml -h postgres -d maps -U admin -W admin -o ntriples --dump > /home/maps/$RELATION_NAME/$OSM_ID.drt
+cd /home/maps/$RELATION_NAME/
+tail -n +3 $OSM_ID.drt > $OSM_ID.cln 
+sort $OSM_ID.cln | uniq > $OSM_ID.n3 
+rm $OSM_ID.drt $OSM_ID.cln
