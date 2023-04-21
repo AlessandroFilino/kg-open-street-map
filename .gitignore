@@ -1,7 +1,6 @@
 #ingore Directory postgresDB
 Dockers/postgresDB/postgres-data
-Dockers/maps/*.pbf
-Dockers/maps/*.osm
+Dockers/maps/*/*.*
 *.n3
 Dockers/maps/*/*.txt
 .DS_Store
