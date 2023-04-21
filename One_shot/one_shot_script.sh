@@ -1,6 +1,12 @@
 #!/bin/sh
 
-REGION_NAME=$(grep -Po '(?<=\[Region_Name\] : ")[^"]*' ./setup.config)
-REGION_BOX=$(grep -Po '(?<=\[Region_Box\] : ")[^"]*' ./setup.config)
+RELATION_NAME=$(grep -Po '(?<=\[Relation_Name\] : ")[^"]*' ./setup.config)
+LOAD_TO_VIRTUOSO=$(grep -Po '(?<=\[Load_To_Virtuoso\] : ")[^"]*' ./setup.config)
 
-wget -O $REGION_NAME.osm "https://api.openstreetmap.org/api/0.6/map?bbox=$REGION_BOX"
+
+cd ./../Dockers
+docker compose up -d
+docker exec -it kg-open-street-map-ubuntu-1 sh -c "/home/scripts/one_shot.sh $RELATION_NAME"
+mkdir ./../Dockers/virtuoso_data/$RELATION_NAME
+cp ./../Dockers/maps/$RELATION_NAME/*.n3 ./../Dockers/virtuoso_data/$RELATION_NAME
+docker exec -it kg-open-street-map-ubuntu-1 sh -c "/home/scripts/load_to_virtuoso.sh $RELATION_NAME"

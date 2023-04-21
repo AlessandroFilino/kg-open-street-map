@@ -2,14 +2,14 @@
 
 #!/bin/sh
 
-if [ ! -d ./tools ];
+if [ ! -d home/scripts/tools ];
     then
-        mkdir -p ./tools/osmosis
-        wget -P ./tools/osmosis https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz 
-        tar xvfz ./tools/osmosis/osmosis-0.48.3.tgz -C ./tools/osmosis
-        rm ./tools/osmosis/osmosis-0.48.3.tgz
-        chmod a+x ./tools/osmosis/bin/osmosis
-        unzip ./sparqlify.zip -d ./tools/
+        mkdir -p home/scripts/tools/osmosis
+        wget -P home/scripts/tools/osmosis https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz 
+        tar xvfz home/scripts/tools/osmosis/osmosis-0.48.3.tgz -C home/scripts/tools/osmosis
+        rm home/scripts/tools/osmosis/osmosis-0.48.3.tgz
+        chmod a+x home/scripts/tools/osmosis/bin/osmosis
+        unzip home/scripts/sparqlify.zip -d home/scripts/tools/
     fi
 
 
