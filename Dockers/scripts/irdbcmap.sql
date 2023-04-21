@@ -21,8 +21,6 @@
 
 
 
-
-
 -- Delimitazione geografica dell'installazione
 
 drop table if exists extra_config_boundaries; 

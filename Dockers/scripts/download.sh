@@ -12,4 +12,6 @@ MAXLAT=$(echo $JSON | jq -r '.[0].boundingbox[1]')
 MINLON=$(echo $JSON | jq -r '.[0].boundingbox[2]')
 MAXLON=$(echo $JSON | jq -r '.[0].boundingbox[3]')
 
-wget -O "/home/maps/${CITY}.osm" "https://api.openstreetmap.org/api/0.6/map?bbox=${MINLON},${MINLAT},${MAXLON},${MAXLAT}"
+QUERY="node($MINLAT,$MINLON,$MAXLAT,$MAXLON);way($MINLAT,$MINLON,$MAXLAT,$MAXLON);(._;>;);out;"
+
+wget -O "/home/maps/${CITY}.osm" "http://overpass-api.de/api/interpreter?data=$QUERY"
