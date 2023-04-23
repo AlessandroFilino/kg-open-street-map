@@ -17,13 +17,23 @@ download_map(){
     QUERY="[out:xml];(node($MINLAT,$MINLON,$MAXLAT,$MAXLON);way($MINLAT,$MINLON,$MAXLAT,$MAXLON);relation($MINLAT,$MINLON,$MAXLAT,$MAXLON);<;);out%20center%20meta;"
 
     wget -O "/home/maps/${RELATION_NAME}.osm" "http://overpass-api.de/api/interpreter?data=$QUERY"
-    
+
     return $ID
 }
 
 
+
 RELATION_NAME=$1
 OSM_ID=$(download_map $RELATION_NAME)
+
+if [ -s /home/maps/$RELATION_NAME.osm ]; 
+then
+    echo "Download completato con successo."
+else
+    echo "Impossibile scaricare la mappa da OSM, riprovare."
+    exit 1
+fi
+
 /home/scripts/init.sh
 /home/scripts/load_map.sh $RELATION_NAME
 /home/scripts/irdbcmap.sh $OSM_ID $RELATION_NAME
