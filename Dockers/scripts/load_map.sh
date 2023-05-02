@@ -9,10 +9,12 @@ BBOX_TOP=$5
 BBOX_BOTTOM=$4
 
 
-if [ ! -d /home/maps/$OSM_ID ];
-    then
-        mkdir /home/maps/$OSM_ID
-    fi
+if [ ! -d /home/maps/$OSM_ID ]; then
+    mkdir /home/maps/$OSM_ID
+else
+    rm -r /home/maps/$OSM_ID
+    mkdir /home/maps/$OSM_ID
+fi
 
 cp /home/scripts/pgsimple_load_0.6.sql /home/maps/$OSM_ID
 
