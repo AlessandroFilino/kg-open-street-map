@@ -92,9 +92,11 @@ def main():
     relation_name = args["relation_name"][0]
     file_name = args["file_name"]
     generate_old = args["generate_old"]
+    graph_name = args["load_to_rdf"]
     osm_id = None
     map_type = None
     bbox = [0, 0, 0, 0]
+    
 
     if file_name != None:
         file_name = file_name[0]
@@ -115,28 +117,12 @@ def main():
 
     os.chdir(f"{BASE_DIR}/Dockers")
     execute_shell_command(["docker", "compose", "up", "-d"])
-    
-    postgres_complete_regex = "LOG:"
-    #while True:
-        #postgres_log = []
-        #execute_shell_command(["docker", "logs", "kg-open-street-map-postgres-1"], postgres_log)
-        #if any(re.search(postgres_complete_regex, s) for s in postgres_log):
-            #print(postgres_log)
-            #break
-        #else:
-            #print(postgres_log)
-            #time.sleep(1)
-    postgres_log = []
-    execute_shell_command(["docker", "logs", "kg-open-street-map-postgres-1"], postgres_log) 
-    for s in postgres_log :
-        find = re.search(postgres_complete_regex, s.strip()) 
-        print(find)
-    return
-
+    time.sleep(10)
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
     file_name_cleaned = file_name.split(".")[0]
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
    
+
 if __name__ == "__main__":
     main()

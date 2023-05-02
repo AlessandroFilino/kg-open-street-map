@@ -1,6 +1,6 @@
 - Su windows ho avuto problemi con postgresdb su cartella, messo come volume mi parte
 
-- Aggiungere vecchie info sui nodi nel nuovo modello
+? Aggiungere vecchie info sui nodi nel nuovo modello
 
 - vorrei indicare in che grafo inserire il grafo strade
 
