@@ -27,6 +27,10 @@ def parse_arguments():
                         help="Carica automaticamente le triple generate su virtuoso rdf store nel grafo indicato",
                         nargs=1,
                         type=str)
+    
+    parser.add_argument("--generate_old",
+                        action="store_true",
+                        help="Genera anche un altro file .n3 contenente le triple senza filtri (con tutti i road element intermedi)")
 
     return vars(parser.parse_args())
     
@@ -83,6 +87,7 @@ def main():
     args = parse_arguments()
     relation_name = args["relation_name"][0]
     file_name = args["file_name"]
+    generate_old = args["generate_old"]
     osm_id = None
     map_type = None
     bbox = [0, 0, 0, 0]
@@ -109,7 +114,7 @@ def main():
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
     file_name_cleaned = file_name.split(".")[0]
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
-    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned}"])
+    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
    
 if __name__ == "__main__":
     main()
