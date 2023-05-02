@@ -3,7 +3,8 @@ import requests
 import os
 import subprocess
 import pathlib
-
+import time
+import re
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="OneShotScript",
@@ -69,13 +70,16 @@ def download_map(relation_name):
     print("Mappa scaricata con successo")
     return osm_id
 
-def execute_shell_command(command):
+def execute_shell_command(command, output=None):
     process = subprocess.Popen(command, stdout=subprocess.PIPE)
     while process.poll() is None:
         while True:
             line = process.stdout.readline()
             if not line: break
-            print(line.decode())
+            if output != None:
+                output.append(line.decode())
+            else:
+                print(line.decode())
 
 BASE_DIR = pathlib.Path(__file__).parent.parent.resolve()
 
@@ -106,6 +110,24 @@ def main():
 
     os.chdir(f"{BASE_DIR}/Dockers")
     execute_shell_command(["docker", "compose", "up", "-d"])
+    
+    postgres_complete_regex = "LOG:"
+    #while True:
+        #postgres_log = []
+        #execute_shell_command(["docker", "logs", "kg-open-street-map-postgres-1"], postgres_log)
+        #if any(re.search(postgres_complete_regex, s) for s in postgres_log):
+            #print(postgres_log)
+            #break
+        #else:
+            #print(postgres_log)
+            #time.sleep(1)
+    postgres_log = []
+    execute_shell_command(["docker", "logs", "kg-open-street-map-postgres-1"], postgres_log) 
+    for s in postgres_log :
+        find = re.search(postgres_complete_regex, s.strip()) 
+        print(find)
+    return
+
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
     file_name_cleaned = file_name.split(".")[0]
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
