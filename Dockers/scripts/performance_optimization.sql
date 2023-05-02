@@ -50,7 +50,7 @@ create index extra_all_boundaries_index_3 on extra_all_boundaries using gist(cen
 drop table if exists outer_boundary;
 
 -- create table outer_boundary as select * from extra_all_boundaries where relation_id = 41977; -- TOSCANA
-create table outer_boundary as select * from extra_all_boundaries where relation_id = 42621; -- TOSCANA
+create table outer_boundary as select * from extra_all_boundaries where relation_id = :OSM_ID; -- OSM_ID passato come parametro
 
 create index outer_boundary_index_1 on outer_boundary using gist(boundary);
 

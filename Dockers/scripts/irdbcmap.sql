@@ -27,7 +27,6 @@ drop table if exists extra_config_boundaries;
 
 create table extra_config_boundaries as 
 select * from extra_all_boundaries where relation_id in (:OSM_ID); --OpenStreetMap id della relazione su cui si vuole fare la triplificazione
--- select * from extra_all_boundaries where relation_id in (42621); --MONTEMIGNANO
 
 create index extra_config_boundaries_index_1 on extra_config_boundaries using gist(boundary);
 
@@ -62,10 +61,9 @@ insert into extra_config_civic_num(civic_num_source) values ('Open Street Map');
 ************ TABELLE DI APPOGGIO ************
 *********************************************/
 
--- TEST
--- proviamo a rimuovere i nodi che non corrispondono ad incroci
+-- Salviamo in una tabella di appoggio tutti i nodi e rimuoviamo quelli che non corrispondono ad incroci (per snellire le triple generate)
 
-drop table all_way_nodes;
+drop table if exists all_way_nodes;
 create table all_way_nodes as
 select * from way_nodes;
 
@@ -91,7 +89,7 @@ insert into way_nodes
 select*
 from tmp_db;
 
-drop table tmp_db;
+drop table if exists tmp_db;
 drop view tmp_view;
 
 -- ____________________________________________________________
