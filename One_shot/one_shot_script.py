@@ -75,7 +75,7 @@ def download_map(relation_name):
     return osm_id
 
 def execute_shell_command(command, output=None):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE)
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     while process.poll() is None:
         while True:
             line = process.stdout.readline()
@@ -117,7 +117,19 @@ def main():
 
     os.chdir(f"{BASE_DIR}/Dockers")
     execute_shell_command(["docker", "compose", "up", "-d"])
-    time.sleep(10)
+    
+    postgres_complete_regex = "LOG:\s+\s+database\s+system\s+is\s+ready\s+to\s+accept\s+connections"
+    postgres_ready = False
+    while not postgres_ready:
+        postgres_log = []
+        execute_shell_command(["docker", "logs", "kg-open-street-map-postgres-1"], postgres_log)
+        for line in postgres_log:
+            find = re.search(postgres_complete_regex, line.strip()) 
+            if find != None:
+                postgres_ready = True
+                break
+    return
+
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
     file_name_cleaned = file_name.split(".")[0]
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
