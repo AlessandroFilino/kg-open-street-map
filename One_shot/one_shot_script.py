@@ -75,7 +75,11 @@ def download_map(relation_name):
     return osm_id
 
 def execute_shell_command(command, output=None):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    if (output == None):
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+    else:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    
     while process.poll() is None:
         while True:
             line = process.stdout.readline()
@@ -117,23 +121,28 @@ def main():
 
     os.chdir(f"{BASE_DIR}/Dockers")
     execute_shell_command(["docker", "compose", "up", "-d"])
+
+    isReady = []
+    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
     
-    postgres_complete_regex = "LOG:\s+\s+database\s+system\s+is\s+ready\s+to\s+accept\s+connections"
-    postgres_ready = False
-    while not postgres_ready:
-        postgres_log = []
-        execute_shell_command(["docker", "logs", "kg-open-street-map-postgres-1"], postgres_log)
-        for line in postgres_log:
-            find = re.search(postgres_complete_regex, line.strip()) 
-            if find != None:
-                postgres_ready = True
+    timeout = 0
+    while True:
+        for line in isReady:
+            if line.find("accepting connections") != -1:
+                print(isReady)
                 break
-    return
+            else:
+                time.sleep(1)
+                timeout += 1
+                if (timeout > 15):
+                    print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 10 s)")
+                    return
+        
 
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
-    file_name_cleaned = file_name.split(".")[0]
-    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
-    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
+    #file_name_cleaned = file_name.split(".")[0]
+    #execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
+    #execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
    
 
 if __name__ == "__main__":
