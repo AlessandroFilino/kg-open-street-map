@@ -122,27 +122,28 @@ def main():
     os.chdir(f"{BASE_DIR}/Dockers")
     execute_shell_command(["docker", "compose", "up", "-d"])
 
-    isReady = []
-    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
     
     timeout = 0
-    while True:
+    ready_to_accept_conn = False
+    while not ready_to_accept_conn:
+        isReady = []
+        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
         for line in isReady:
             if line.find("accepting connections") != -1:
-                print(isReady)
+                print("Container postgress avviato correttamente")
+                ready_to_accept_conn = True
                 break
             else:
                 time.sleep(1)
                 timeout += 1
                 if (timeout > 15):
-                    print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 10 s)")
-                    return
-        
+                    print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 15 s)")
+                    return    
 
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
-    #file_name_cleaned = file_name.split(".")[0]
-    #execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
-    #execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
+    file_name_cleaned = file_name.split(".")[0]
+    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
+    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
    
 
 if __name__ == "__main__":
