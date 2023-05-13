@@ -4,7 +4,6 @@ import os
 import subprocess
 import pathlib
 import time
-import re
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="OneShotScript",
@@ -123,9 +122,15 @@ def main():
     execute_shell_command(["docker", "compose", "up", "-d"])
 
     
-    timeout = 0
+    timeout = -1
     ready_to_accept_conn = False
     while not ready_to_accept_conn:
+        time.sleep(1)
+        timeout += 1
+        if (timeout > 30):
+            print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 30 s)")
+            return    
+        
         isReady = []
         execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
         for line in isReady:
@@ -133,12 +138,7 @@ def main():
                 print("Container postgress avviato correttamente")
                 ready_to_accept_conn = True
                 break
-            else:
-                time.sleep(1)
-                timeout += 1
-                if (timeout > 15):
-                    print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 15 s)")
-                    return    
+        
 
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
     file_name_cleaned = file_name.split(".")[0]
