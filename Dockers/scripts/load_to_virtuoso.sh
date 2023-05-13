@@ -1,26 +1,25 @@
 #!/bin/sh
 
 RELATION_NAME=$1
-GRAPH_NAME=$2
+# GRAPH_NAME=$2
+GRAPH_NAME="http://example.org/test"
 
-# isql-vt -H kg-open-street-map-virtuoso-1 -P admin <<EOF
-#         SPARQL CREATE GRAPH <$GRAPH_NAME>;
-#         SPARQL CLEAR GRAPH <$GRAPH_NAME>;
-#         ld_dir('$RELATION_NAME', '*.n3', '$GRAPH_NAME');
-#         rdf_loader_run();
-#         exit;
-# EOF
+# Controlliamo se il grafo contiene già delle triple
+GRAPH_EXISTS=$(echo "SPARQL ASK { GRAPH <$GRAPH_NAME> { ?s ?p ?o } };" | isql-vt -H kg-open-street-map-virtuoso-1 -P admin) 
+GRAPH_EXISTS=$(echo $GRAPH_EXISTS | grep -oP 'ask_retval INTEGER _*?\K ([10])')
 
-# isql-vt -H kg-open-street-map-virtuoso-1 -P admin <<EOF
-#         ld_dir('$RELATION_NAME', '*.n3', 'http://example.org/load');
-#         rdf_loader_run();
-#         exit;
-# EOF
 
-# isql-vt -H kg-open-street-map-virtuoso-1 -P admin <<EOF
-#         SPARQL ASK WHERE { GRAPH <http://example.org/load> { ?s ?p ?o } };
-# EOF
+if [ "$GRAPH_EXISTS" -eq 1 ];
+    then
+        # Il grafo contiene già delle triple,le eliminiamo 
+        echo "\nELIMINAZIONE TRIPLE DA VECCHIO GRAFO $GRAPH_NAME.n3\n"
+        echo "SPARQL CLEAR GRAPH <$GRAPH_NAME>;" | isql-vt isql-vt -H kg-open-street-map-virtuoso-1 -P admin
+        echo "DELETE FROM DB.DBA.LOAD_LIST WHERE ll_file='$RELATION_NAME/$RELATION_NAME.n3';" | isql-vt isql-vt -H kg-open-street-map-virtuoso-1 -P admin
+    fi
 
-GRAPH_EXISTS=$(echo "SPARQL ASK { GRAPH <http://example.org/load> { ?s ?p ?o } };" | isql-vt -H kg-open-street-map-virtuoso-1 -P admin)
-echo $GRAPH_EXISTS | grep -oP '(?<=INTEGER _+)\d'
+echo "\n\nCARICAMENTO TRIPLE DA FILE : $RELATION_NAME.n3\n"
+# echo "SPARQL CREATE GRAPH <$GRAPH_NAME>;" | isql-vt isql-vt -H kg-open-street-map-virtuoso-1 -P admin
+echo "ld_dir('$RELATION_NAME', '$RELATION_NAME.n3', '$GRAPH_NAME');" | isql-vt isql-vt -H kg-open-street-map-virtuoso-1 -P admin
+echo "rdf_loader_run();" | isql-vt isql-vt -H kg-open-street-map-virtuoso-1 -P admin
+
 
