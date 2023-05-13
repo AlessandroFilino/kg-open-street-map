@@ -1,9 +1,7 @@
 - Su windows ho avuto problemi con postgresdb su cartella, messo come volume mi parte
 
-? Aggiungere vecchie info sui nodi nel nuovo modello
+- Copiare la mappa dalla cartella maps a virtuoso
 
-- vorrei indicare in che grafo inserire il grafo strade
-
-- vorrei poter aggiornare il grafo che quindi deve essere eliminato se presente e caricato il nuovo
+- Mettere opzione per caricare solo su virtuoso (senza rigenerare le triple)
 
 - Poi dovete scrivere una relazione in cui documentate quello che avete fatto e descrivete i singoli passi che vengono fatti e le modifiche che avete fatto.
