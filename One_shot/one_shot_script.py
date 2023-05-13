@@ -95,7 +95,7 @@ def main():
     relation_name = args["relation_name"][0]
     file_name = args["file_name"]
     generate_old = args["generate_old"]
-    graph_name = args["load_to_rdf"]
+    graph_name = args["load_to_rdf"][0]
     osm_id = None
     map_type = None
     bbox = [0, 0, 0, 0]
@@ -144,7 +144,12 @@ def main():
     file_name_cleaned = file_name.split(".")[0]
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
-   
+    
+    if graph_name != None:
+        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_to_virtuoso.sh {osm_id} {graph_name}"])
 
 if __name__ == "__main__":
     main()
+
+
+# python3 One_shot/one_shot_script.py -r montemignaio -l http://example.org/test1
