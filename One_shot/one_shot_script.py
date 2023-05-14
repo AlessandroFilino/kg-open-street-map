@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
+
 import argparse
 import requests
 import os
 import subprocess
 import pathlib
 import time
+
+import docker
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="OneShotScript",
@@ -144,8 +148,11 @@ def main():
     file_name_cleaned = file_name.split(".")[0]
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
-    
+
     if graph_name != None:
+        execute_shell_command(["docker", "exec", "kg-open-street-map-virtuoso-1", "mkdir", "-p", f"/opt/virtuoso-opensource/database/{osm_id}/"])
+        #execute_shell_command('docker cp kg-open-street-map-ubuntu-1:/home/maps/{osm_id}/{osm_id}.n3 - | docker exec -i kg-open-street-map-virtuoso-1 sh -c "cd /opt/virtuoso-opensource/database/{osm_id} && tar x"')
+        execute_shell_command(["sh", "-c", f"docker cp kg-open-street-map-ubuntu-1:/home/maps/{osm_id}/{osm_id}.n3 - | docker exec -i kg-open-street-map-virtuoso-1 sh -c 'cd /opt/virtuoso-opensource/database/{osm_id}/ && tar x'"])
         execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_to_virtuoso.sh {osm_id} {graph_name}"])
 
 if __name__ == "__main__":
