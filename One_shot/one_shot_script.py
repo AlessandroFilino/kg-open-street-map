@@ -7,8 +7,6 @@ import subprocess
 import pathlib
 import time
 
-import docker
-
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="OneShotScript",
                                  description="A partire da un estratto OSM, genera triple in formato .n3 da poter caricare su virtuoso rdf store",
