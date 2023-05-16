@@ -1,5 +1,5 @@
 #ingore Directory postgresDB
-Dockers/postgresDB/postgres-data
+Dockers/postgresDB/*
 Dockers/maps/**
 !Dockers/maps/readme.txt
 .DS_Store
