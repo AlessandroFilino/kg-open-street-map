@@ -1957,10 +1957,11 @@ set route = linestring
 from tmp_cleaned t3
 where r1.id = t3.id;
 
-drop view tmp_node_coord cascade;
-drop view tmp_way_array cascade;
-drop view tmp_linestrings cascade;
 drop view tmp_cleaned cascade;
+drop view tmp_linestrings cascade;
+drop view tmp_way_array cascade;
+drop view tmp_node_coord cascade;
+
 
 /********** RoadElement.StartsAtNode **********/
 
@@ -2695,7 +2696,11 @@ when position('@' in tag_oneway.v) = 0 and ( tag_oneway.v = 'yes' or tag_oneway.
 when position('@' in tag_oneway.v) > 0 and ( trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1' ) then 'backward'
 when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward' 
 when position('@' in tag_oneway.v) > 0 and trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '-1' then 'forward'
-else unnest(array['forward','backward']) 
+else 
+    case 
+    when position('@' in tag_oneway.v) > 1 and trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) = 'forward' then 'forward'
+    when position('@' in tag_oneway.v) > 1 and trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) = 'backward' then 'backward'
+    end
 end p_direction,
 case when t.description is not null then t.description when coalesce(tag_ped_cycle.v,'') = 'pedestrian' then 'foot' when coalesce(tag_ped_cycle.v,'') = 'cycleway' or tag_cycleway_opposite.node_id is not null then 'bicycle' else 'vehicle' end p_who,
 case when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) else null end p_condition
@@ -2724,7 +2729,11 @@ when position('@' in tag_oneway.v) = 0 and ( tag_oneway.v = 'yes' or tag_oneway.
 when position('@' in tag_oneway.v) > 0 and ( trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1' ) then 'backward'
 when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward' 
 when position('@' in tag_oneway.v) > 0 and trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '-1' then 'forward'
-else unnest(array['forward','backward']) 
+else 
+    case 
+    when position('@' in tag_oneway.v) > 1 and trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) = 'forward' then 'forward'
+    when position('@' in tag_oneway.v) > 1 and trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) = 'backward' then 'backward'
+    end
 end p_direction,
 case when t.description is not null then t.description when coalesce(tag_ped_cycle.v,'') = 'pedestrian' then 'foot' when coalesce(tag_ped_cycle.v,'') = 'cycleway' or tag_cycleway_opposite.way_id is not null then 'bicycle' else 'vehicle' end p_who,
 case when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) else null end p_condition
@@ -2773,7 +2782,11 @@ when position('@' in tag_oneway.v) = 0 and ( tag_oneway.v = 'yes' or tag_oneway.
 when position('@' in tag_oneway.v) > 0 and ( trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1' ) then 'backward'
 when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward' 
 when position('@' in tag_oneway.v) > 0 and trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '-1' then 'forward'
-else unnest(array['forward','backward']) 
+else 
+    case 
+    when position('@' in tag_oneway.v) > 1 and trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) = 'forward' then 'forward'
+    when position('@' in tag_oneway.v) > 1 and trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) = 'backward' then 'backward'
+    end
 end p_direction,
 case when t.description is not null then t.description when coalesce(tag_ped_cycle.v,'') = 'pedestrian' then 'foot' when coalesce(tag_ped_cycle.v,'') = 'cycleway' or tag_cycleway_opposite.relation_id is not null then 'bicycle' else 'vehicle' end p_who,
 case when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) else null end p_condition
