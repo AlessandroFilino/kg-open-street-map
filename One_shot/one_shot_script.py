@@ -97,11 +97,13 @@ def main():
     relation_name = args["relation_name"][0]
     file_name = args["file_name"]
     generate_old = args["generate_old"]
-    graph_name = args["load_to_rdf"][0]
+    graph_name = None
     osm_id = None
     map_type = None
     bbox = [0, 0, 0, 0]
     
+    if args["load_to_rdf"] != None:
+        graph_name = args["load_to_rdf"][0]
 
     if file_name != None:
         file_name = file_name[0]
