@@ -3,6 +3,7 @@
 import argparse
 import requests
 import os
+import shutil
 import subprocess
 import pathlib
 import time
@@ -150,12 +151,20 @@ def main():
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
 
     if graph_name != None:
-        execute_shell_command(["docker", "exec", "kg-open-street-map-virtuoso-1", "mkdir", "-p", f"/opt/virtuoso-opensource/database/{osm_id}/"])
-        execute_shell_command(["sh", "-c", f"docker cp kg-open-street-map-ubuntu-1:/home/maps/{osm_id}/{osm_id}.n3 - | docker exec -i kg-open-street-map-virtuoso-1 sh -c 'cd /opt/virtuoso-opensource/database/{osm_id}/ && tar x'"])
+        # TODO inserire controllo sul file .n3 per verificare che sia stato generato
+        if os.path.exists(f"{BASE_DIR}/Dockers/virtuoso_data/{osm_id}"):
+            os.rmdir(f"{BASE_DIR}/Dockers/virtuoso_data/{osm_id}")
+
+        os.mkdir(f"{BASE_DIR}/Dockers/virtuoso_data/{osm_id}")
+        shutil.copy2(f"{BASE_DIR}/Dockers/maps/{osm_id}/{osm_id}.n3", f"{BASE_DIR}/Dockers/virtuoso_data/{osm_id}")
         execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_to_virtuoso.sh {osm_id} {graph_name}"])
 
 if __name__ == "__main__":
     main()
+    
+    
+
 
 
 # python3 One_shot/one_shot_script.py -r montemignaio -l http://example.org/test1
+# pg_restore -d maps_old maps_old_db.tar -h postgres -U admin
