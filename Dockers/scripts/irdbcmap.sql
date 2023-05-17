@@ -43,7 +43,7 @@ id serial primary key,
 graph_uri varchar(255)
 );
 
-insert into extra_config_graph(graph_uri) values ('http://www.disit.org/km4city/resource/OSM/montemignaio'); 
+insert into extra_config_graph(graph_uri) values (CONCAT('http://www.disit.org/km4city/resource/OSM/', :OSM_ID)); 
 
 -- Utilizzo dei numeri civici della Regione Toscana piuttosto che nativi di OSM
 
@@ -79,6 +79,7 @@ create or replace view tmp_view as
 select way_id,node_id,(row_number() over(partition by way_id order by sequence_id) -1)as sequence_id
 from way_nodes;
 
+
 select *
 into tmp_db
 from tmp_view;
@@ -90,7 +91,7 @@ select*
 from tmp_db;
 
 drop table if exists tmp_db;
-drop view tmp_view;
+drop view if exists tmp_view;
 
 -- ____________________________________________________________
 
@@ -1926,6 +1927,9 @@ join relation_tags r_pedestrian on r.relation_id = r_pedestrian.relation_id and 
 
 --TEST aggiornamento linestring
 
+DELETE FROM RoadElementRoute
+WHERE true;
+
 create or replace view tmp_node_coord as
 SELECT global_id, local_id, start_node AS points
 FROM all_extra_ways
@@ -1934,12 +1938,14 @@ SELECT p1.global_id,p1.local_id, p1.end_node AS points
 FROM all_extra_ways p1
 WHERE end_node NOT IN (SELECT p2.start_node FROM all_extra_ways p2 where p1.global_id = p2.global_id);
 
+create or replace view tmp_node_coord0 as 
+select * from tmp_node_coord
+order by global_id, local_id;
 
 create or replace view tmp_way_array as
 select global_id, array_agg(points) as points
-from tmp_node_coord
+from tmp_node_coord0
 group by global_id;
-
 
 create or replace view tmp_linestrings as 
 select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
@@ -1952,15 +1958,13 @@ select id, linestring
 from tmp_linestrings																											 
 where linestring <> '';
 
-update RoadElementRoute r1
-set route = linestring
-from tmp_cleaned t3
-where r1.id = t3.id;
+insert into RoadElementRoute
+select CONCAT('http://www.disit.org/km4city/resource/OSM/', :OSM_ID), id, linestring from tmp_cleaned;
 
-drop view tmp_node_coord cascade;
-drop view tmp_way_array cascade;
-drop view tmp_linestrings cascade;
-drop view tmp_cleaned cascade;
+drop view if exists tmp_node_coord cascade;
+drop view if exists tmp_way_array cascade;
+drop view if exists tmp_linestrings cascade;
+drop view if exists tmp_cleaned cascade;
 
 /********** RoadElement.StartsAtNode **********/
 
