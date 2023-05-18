@@ -1,15 +1,7 @@
-- Su windows ho avuto problemi con postgresdb su cartella, messo come volume mi parte
+- Test su windows
 
-- Mettere opzione per caricare solo su virtuoso (senza rigenerare le triple)
+- (?) Aggiungere nodi iniziali e finali di ogni ways per tracciare meglio le strade 
 
 - Poi dovete scrivere una relazione in cui documentate quello che avete fatto e descrivete i singoli passi che vengono fatti e le modifiche che avete fatto.
 
-- Aggiugnere assembly maven direttamente su docker (?)
-
-
-- Sistemare: 
-    create or replace view tmp_linestrings as 
-    select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
-    from tmp_way_array t1, extra_ways w1
-    where t1.global_id = w1.global_id															 
-    order by id;
+- (?) Aggiugnere assembly maven direttamente su docker 
