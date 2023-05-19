@@ -67,6 +67,11 @@ drop table if exists all_way_nodes;
 create table all_way_nodes as
 select * from way_nodes;
 
+create index on all_way_nodes (way_id);
+create index on all_way_nodes (node_id);
+create index on all_way_nodes (sequence_id);
+
+
 delete from way_nodes w1 
 where node_id in(select w2.node_id 
 from way_nodes w2
@@ -75,10 +80,37 @@ select w2.node_id
 from way_nodes w2
 inner join way_nodes w3 on w2.way_id != w3.way_id AND w2.node_id = w3.node_id);
 
+-- test per aggiungere i nodi iniziali e finali
+-- insert into way_nodes
+-- SELECT w1.*
+-- FROM all_way_nodes w1
+-- JOIN (
+--     SELECT way_id, MAX(sequence_id) AS max_sequence_id, MIN(sequence_id) AS min_sequence_id
+--     FROM all_way_nodes
+--     GROUP BY way_id
+-- ) w2 ON w1.way_id = w2.way_id
+-- WHERE w1.node_id not in (select node_id from way_nodes) and (w1.sequence_id = w2.max_sequence_id OR w1.sequence_id = w2.min_sequence_id);
+
+-- Stessa query con tabella di appoggio (performance migliori)
+CREATE TEMPORARY TABLE temp_way_nodes AS
+SELECT way_id, MAX(sequence_id) AS max_sequence_id, MIN(sequence_id) AS min_sequence_id
+FROM all_way_nodes
+GROUP BY way_id;
+
+INSERT INTO way_nodes
+SELECT w1.*
+FROM all_way_nodes w1
+JOIN temp_way_nodes w2 ON w1.way_id = w2.way_id
+LEFT JOIN way_nodes wn ON w1.node_id = wn.node_id
+WHERE wn.node_id IS NULL
+    AND (w1.sequence_id = w2.max_sequence_id OR w1.sequence_id = w2.min_sequence_id);
+
+DROP TABLE temp_way_nodes;
+-- 
+
 create or replace view tmp_view as
 select way_id,node_id,(row_number() over(partition by way_id order by sequence_id) -1)as sequence_id
 from way_nodes;
-
 
 select *
 into tmp_db
