@@ -101,9 +101,9 @@ def download_map(osm_id, bbox):
 
 def execute_shell_command(command, output=None):
     if (output == None):
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL)
     else:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
     
     while process.poll() is None:
         while True:
@@ -137,6 +137,7 @@ def main():
         relation_data = get_relation_data_by_name(relation_name)
         osm_id = relation_data["osm_id"]
     elif osm_id != None:
+        osm_id = osm_id[0]
         relation_data = get_relation_data_by_osmid(osm_id)
     bbox = relation_data["boundingbox"]
 
