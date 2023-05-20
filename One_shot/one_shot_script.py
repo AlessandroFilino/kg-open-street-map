@@ -173,6 +173,7 @@ def main():
             print(line)
             if line.find("accepting connections") != -1:
                 print("Container postgress avviato correttamente")
+                time.sleep(30)
                 ready_to_accept_conn = True
                 break
         
