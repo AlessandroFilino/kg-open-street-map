@@ -98,7 +98,9 @@ WHERE wn.node_id IS NULL
     AND (w1.sequence_id = w2.max_sequence_id OR w1.sequence_id = w2.min_sequence_id);
 
 DROP TABLE temp_way_nodes;
--- 
+
+create table way_nodes_old as
+select * from way_nodes;
 
 create or replace view tmp_view as
 select way_id,node_id,(row_number() over(partition by way_id order by sequence_id) -1)as sequence_id
