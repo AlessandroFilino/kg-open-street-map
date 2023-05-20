@@ -1,6 +1,1 @@
 FROM postgis/postgis:11-3.3-alpine
-
-#RUN apt-get update -y || true
-#RUN apt-get install --no-install-recommends -y postgresql-9.6-postgis-2.3 postgresql-9.6-postgis-2.3-scripts -y
-#RUN apt-get clean -y
-#RUN rm -rf /var/lib/apt/lists/*

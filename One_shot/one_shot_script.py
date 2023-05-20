@@ -101,9 +101,9 @@ def download_map(osm_id, bbox):
 
 def execute_shell_command(command, output=None):
     if (output == None):
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
     else:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     
     while process.poll() is None:
         while True:
@@ -163,13 +163,14 @@ def main():
     while not ready_to_accept_conn:
         time.sleep(1)
         timeout += 1
-        if (timeout > 30):
+        if (timeout > 60):
             print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 30 s)")
             return    
         
         isReady = []
         execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
         for line in isReady:
+            print(line)
             if line.find("accepting connections") != -1:
                 print("Container postgress avviato correttamente")
                 ready_to_accept_conn = True

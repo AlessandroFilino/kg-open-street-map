@@ -44,9 +44,13 @@ services:
           volumes: 
             - ./virtuoso_data:/database
   pgadmin:
-         image: dpage/pgadmin4:4.0
+         image: dpage/pgadmin4:7.1
          environment:
            - PGADMIN_DEFAULT_EMAIL=test@gmail.com
            - PGADMIN_DEFAULT_PASSWORD=admin
+           - PGADMIN_DEFAULT_SERVER=postgres
          ports:
            - "5050:80"
+         depends_on:
+           - postgres
+
