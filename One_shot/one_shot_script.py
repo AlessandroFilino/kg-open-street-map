@@ -170,7 +170,6 @@ def main():
         isReady = []
         execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
         for line in isReady:
-            print(line)
             if line.find("accepting connections") != -1:
                 print("Container postgress avviato correttamente")
                 time.sleep(30)

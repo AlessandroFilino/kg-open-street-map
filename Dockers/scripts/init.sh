@@ -20,8 +20,8 @@ fi
 chmod -R 777 /home/scripts/
 chmod -R 777 /home/maps/
 
-psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME -c "DROP DATABASE IF EXISTS $DB_NAME;"
-psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME -c "CREATE DATABASE $DB_NAME;"
+psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/postgres -c "DROP DATABASE IF EXISTS $DB_NAME;"
+psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/postgres -c "CREATE DATABASE $DB_NAME;"
 psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME -c "CREATE EXTENSION postgis; CREATE EXTENSION hstore;"
 
 psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME -f /home/scripts/tools/osmosis/script/pgsimple_schema_0.6.sql
