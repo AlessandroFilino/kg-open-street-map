@@ -1,5 +1,10 @@
 #!/bin/sh
-osmosis=/home/scripts/tools/osmosis/bin/osmosis
+
+DB_USER="admin"
+DB_PASSWORD="admin"
+DB_NAME="maps"
+osmosis="/home/scripts/tools/osmosis/bin/osmosis"
+
 OSM_ID=$1
 RELATION_NAME=$2
 MAP_TYPE=$3
@@ -7,7 +12,6 @@ BBOX_LEFT=$6
 BBOX_RIGHT=$7
 BBOX_TOP=$5
 BBOX_BOTTOM=$4
-
 
 if [ ! -d /home/maps/$OSM_ID ]; then
     mkdir /home/maps/$OSM_ID
@@ -29,11 +33,8 @@ else
     echo "Estenzione della mappa invalida: $MAP_TYPE"
 fi
 
-
-
 # rm /home/maps/$OSM_ID.osm
 cd /home/maps/$OSM_ID/
-psql postgresql://admin:admin@postgres:5432/maps -f /home/maps/$OSM_ID/pgsimple_load_0.6.sql
+psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME -f /home/maps/$OSM_ID/pgsimple_load_0.6.sql
 cd /home/scripts/
-psql postgresql://admin:admin@postgres:5432/maps  -f /home/scripts/performance_optimization.sql -v OSM_ID=$OSM_ID
-
+psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME -f /home/scripts/performance_optimization.sql -v OSM_ID=$OSM_ID
