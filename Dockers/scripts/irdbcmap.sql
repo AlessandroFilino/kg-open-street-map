@@ -73,25 +73,17 @@ create index on all_way_nodes (sequence_id);
 
 
 delete from way_nodes w1 
-where node_id in(select w2.node_id 
-from way_nodes w2
-except
-select w2.node_id
-from way_nodes w2
-inner join way_nodes w3 on w2.way_id != w3.way_id AND w2.node_id = w3.node_id);
+where w1.node_id not in (select w4.node_id
+						 from way_nodes w4
+						group by w4.node_id 
+						having count(*) > 1)
+and w1.node_id in(select w2.node_id 
+				from way_nodes w2
+				except
+				select w2.node_id
+				from way_nodes w2
+				inner join way_nodes w3 on w2.way_id != w3.way_id AND w2.node_id = w3.node_id);
 
--- test per aggiungere i nodi iniziali e finali
--- insert into way_nodes
--- SELECT w1.*
--- FROM all_way_nodes w1
--- JOIN (
---     SELECT way_id, MAX(sequence_id) AS max_sequence_id, MIN(sequence_id) AS min_sequence_id
---     FROM all_way_nodes
---     GROUP BY way_id
--- ) w2 ON w1.way_id = w2.way_id
--- WHERE w1.node_id not in (select node_id from way_nodes) and (w1.sequence_id = w2.max_sequence_id OR w1.sequence_id = w2.min_sequence_id);
-
--- Stessa query con tabella di appoggio (performance migliori)
 CREATE TEMPORARY TABLE temp_way_nodes AS
 SELECT way_id, MAX(sequence_id) AS max_sequence_id, MIN(sequence_id) AS min_sequence_id
 FROM all_way_nodes
@@ -1963,26 +1955,28 @@ DELETE FROM RoadElementRoute
 WHERE true;
 
 create or replace view tmp_node_coord as
-SELECT global_id, local_id, start_node AS points
-FROM all_extra_ways
-UNION
-SELECT p1.global_id,p1.local_id, p1.end_node AS points
-FROM all_extra_ways p1
-WHERE end_node NOT IN (SELECT p2.start_node FROM all_extra_ways p2 where p1.global_id = p2.global_id);
+select wn.way_id, wn.node_id, wn.sequence_id as local_id, w1.start_node as points from all_way_nodes wn
+left join all_extra_ways w1 on w1.global_id = wn.way_id and w1.prev_node_id = wn.node_id
+where w1.start_node is not null
+union
+select wn.way_id, wn.node_id, wn.sequence_id as local_id, w2.end_node as points from all_way_nodes wn
+left join all_extra_ways w2 on w2.global_id = wn.way_id and w2.next_node_id = wn.node_id
+where w2.end_node is not null
+order by local_id;
 
 create or replace view tmp_node_coord0 as 
 select * from tmp_node_coord
-order by global_id, local_id;
+order by way_id, local_id;
 
 create or replace view tmp_way_array as
-select global_id, array_agg(points) as points
+select way_id, array_agg(points) as points
 from tmp_node_coord0
-group by global_id;
+group by way_id;
 
 create or replace view tmp_linestrings as 
 select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
 from tmp_way_array t1, extra_ways w1
-where t1.global_id = w1.global_id															 
+where t1.way_id = w1.global_id															 
 order by id;
 
 create or replace view tmp_cleaned as 
@@ -1991,7 +1985,7 @@ from tmp_linestrings
 where linestring <> '';
 
 insert into RoadElementRoute
-select CONCAT('http://www.disit.org/km4city/resource/OSM/', :OSM_ID), id, linestring from tmp_cleaned;
+select CONCAT('http://www.disit.org/km4city/resource/OSM/', 42621), id, linestring from tmp_cleaned;
 
 drop view if exists tmp_node_coord cascade;
 drop view if exists tmp_way_array cascade;

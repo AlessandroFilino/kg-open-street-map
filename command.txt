@@ -1,35 +1,43 @@
-drop table if exists test;
-drop table if exists test1;
-drop table if exists test2;
-drop table if exists test3;
+select * from all_way_nodes
+where way_id = 422659696;
 
-create table test as
-SELECT global_id, local_id, start_node AS points
-FROM all_extra_ways
-UNION
-SELECT p1.global_id,p1.local_id, p1.end_node AS points
-FROM all_extra_ways p1
-WHERE end_node NOT IN (SELECT p2.start_node FROM all_extra_ways p2 where p1.global_id = p2.global_id);
+select * from all_extra_ways
+where global_id = 422659696;
 
 
-create table test1 as
-select global_id, array_agg(points) as points
-from test
-group by global_id;
+-- 
+create or replace view tmp_node_coord as
+select wn.way_id, wn.node_id, wn.sequence_id as local_id, w1.start_node as points from all_way_nodes wn
+left join all_extra_ways w1 on w1.global_id = wn.way_id and w1.prev_node_id = wn.node_id
+where w1.start_node is not null
+union
+select wn.way_id, wn.node_id, wn.sequence_id as local_id, w2.end_node as points from all_way_nodes wn
+left join all_extra_ways w2 on w2.global_id = wn.way_id and w2.next_node_id = wn.node_id
+where w2.end_node is not null
+order by local_id;
 
+--
 
-create table test2 as 
+create or replace view tmp_node_coord0 as 
+select * from tmp_node_coord
+order by way_id, local_id;
+
+create or replace view tmp_way_array as
+select way_id, array_agg(points) as points
+from tmp_node_coord0
+group by way_id;
+
+create or replace view tmp_linestrings as 
 select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
-from test1 t1, extra_ways w1
-where t1.global_id = w1.global_id															 
+from tmp_way_array t1, extra_ways w1
+where t1.way_id = w1.global_id															 
 order by id;
 
-create table test3 as 
+create or replace view tmp_cleaned as 
 select id, linestring 
-from test2																											 
+from tmp_linestrings																											 
 where linestring <> '';
 
-update roadelementroute r1
-set route = linestring
-from test3 t3
-where r1.id= t3.id
+insert into RoadElementRoute
+select CONCAT('http://www.disit.org/km4city/resource/OSM/', 42621), id, linestring from tmp_cleaned;
+
