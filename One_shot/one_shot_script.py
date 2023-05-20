@@ -101,9 +101,9 @@ def download_map(osm_id, bbox):
 
 def execute_shell_command(command, output=None):
     if (output == None):
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
     else:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     
     while process.poll() is None:
         while True:
