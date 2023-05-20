@@ -49,6 +49,7 @@ services:
            - PGADMIN_DEFAULT_EMAIL=test@gmail.com
            - PGADMIN_DEFAULT_PASSWORD=admin
            - PGADMIN_DEFAULT_SERVER=postgres
+           - PGADMIN_CONFIG_ON_DEMAND_RECORD_COUNT=100000
          ports:
            - "5050:80"
          depends_on:
