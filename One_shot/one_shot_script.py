@@ -174,7 +174,7 @@ def main():
     if not os.listdir(f"{BASE_DIR}/Dockers/postgresDB/"):
         inizialization_postgres = True
 
-    execute_shell_command(["docker", "compose", "up", "-d"], True)
+    execute_shell_command(["docker", "compose", "up", "-d"],handle_exit_number=False)
 
     timeout = -1
     ready_to_accept_conn = False
