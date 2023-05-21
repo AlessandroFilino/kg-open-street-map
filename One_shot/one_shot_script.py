@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import pathlib
 import time
+import sys
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="OneShotScript",
@@ -99,20 +100,32 @@ def download_map(osm_id, bbox):
 
     print("Mappa scaricata con successo")
 
-def execute_shell_command(command, output=None):
-    if (output == None):
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
-    else:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+def execute_shell_command(command, output=None, handle_exit_number=False):
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    while process.poll() is None:
-        while True:
-            line = process.stdout.readline()
-            if not line: break
-            if output != None:
-                output.append(line.decode())
-            else:
-                print(line.decode())
+    while True:
+        line = process.stdout.readline()
+        if not line:
+            break
+        if output is not None:
+            output.append(line.decode())
+        else:
+            print(line.decode())
+    
+    while handle_exit_number:
+        error_line = process.stderr.readline()
+        if not error_line:
+            break
+        error_output = error_line.decode().strip()
+        if error_output:
+            print("Errore:", error_output)
+            sys.exit(1) 
+
+    return_code = process.wait()
+    if return_code != 0:
+        sys.exit(return_code)
+        
+
 
 BASE_DIR = pathlib.Path(__file__).parent.parent.resolve()
 
@@ -155,8 +168,13 @@ def main():
         file_name = f"{osm_id}.osm"
         map_type = "osm"
 
+    inizialization_postgres = False
     os.chdir(f"{BASE_DIR}/Dockers")
-    execute_shell_command(["docker", "compose", "up", "-d"])
+
+    if not os.listdir(f"{BASE_DIR}/Dockers/postgresDB/"):
+        inizialization_postgres = True
+
+    execute_shell_command(["docker", "compose", "up", "-d"], True)
 
     timeout = -1
     ready_to_accept_conn = False
@@ -171,11 +189,15 @@ def main():
         execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
         for line in isReady:
             if line.find("accepting connections") != -1:
+                if(inizialization_postgres):
+                   print("Inizializzazione di postgress")
+                   time.sleep(40)
+                   inizialization_postgres = False   
                 print("Container postgress avviato correttamente")
                 ready_to_accept_conn = True
                 break
         
-    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"])
+    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"], handle_exit_number=True)
     file_name_cleaned = file_name.split(".")[0]
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
@@ -190,7 +212,7 @@ def main():
 
         os.mkdir(path_in_virtuoso)
         shutil.copy2(f"{BASE_DIR}/Dockers/maps/{osm_id}/{osm_id}.n3", path_in_virtuoso)
-        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_to_virtuoso.sh {osm_id} {graph_name}"])
+        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_to_virtuoso.sh {osm_id} {graph_name}"], handle_exit_number=True)
 
 if __name__ == "__main__":
     main()

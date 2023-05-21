@@ -3,11 +3,10 @@ version: "3.8"
 name: kg-open-street-map
 services:
   postgres:
-          # image: postgres:9.6
+          image: postgis/postgis:15-3.3
           build:
             #directory base, con il . è la stessa del compose.yml
             context: . 
-            dockerfile: Dockerfile_postgres
           shm_size: 1g
           environment:
             - POSTGRES_USER=admin
