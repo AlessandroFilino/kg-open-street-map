@@ -155,7 +155,12 @@ def main():
         file_name = f"{osm_id}.osm"
         map_type = "osm"
 
+    inizialization_postgres = False
     os.chdir(f"{BASE_DIR}/Dockers")
+
+    if not os.listdir(f"{BASE_DIR}/Dockers/postgresDB/"):
+        inizialization_postgres = True
+
     execute_shell_command(["docker", "compose", "up", "-d"])
 
     timeout = -1
@@ -171,8 +176,11 @@ def main():
         execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
         for line in isReady:
             if line.find("accepting connections") != -1:
+                if(inizialization_postgres):
+                   print("Inizializzazione di postgress")
+                   time.sleep(40)
+                   inizialization_postgres = False   
                 print("Container postgress avviato correttamente")
-                time.sleep(30)
                 ready_to_accept_conn = True
                 break
         
