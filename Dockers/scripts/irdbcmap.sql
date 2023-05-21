@@ -77,18 +77,25 @@ create index on all_way_nodes (way_id);
 create index on all_way_nodes (node_id);
 create index on all_way_nodes (sequence_id);
 
+
 --Rimozione dei nodi che non sono incroci tra due strade o nella stessa strada
-delete from way_nodes w1 
-where w1.node_id not in (select w4.node_id
-						 from way_nodes w4
-						group by w4.node_id 
-						having count(*) > 1)
-and w1.node_id in(select w2.node_id 
+CREATE TEMPORARY TABLE tmp_node_to_delete as select w2.node_id 
 				from way_nodes w2
 				except
 				select w2.node_id
 				from way_nodes w2
-				inner join way_nodes w3 on w2.way_id != w3.way_id AND w2.node_id = w3.node_id);
+				inner join way_nodes w3 on w2.way_id != w3.way_id AND w2.node_id = w3.node_id
+				except
+				select w4.node_id
+				from way_nodes w4
+				group by w4.node_id 
+				having count(*) > 1;
+
+delete from way_nodes w1 
+where w1.node_id in (select w2.node_id from tmp_node_to_delete w2);
+
+drop table if exists tmp_node_to_delete;
+
 
 --Inserimento dei nodi di inizio e fine di ogni strada
 CREATE TEMPORARY TABLE temp_way_nodes AS
