@@ -12,6 +12,9 @@ services:
           environment:
             - POSTGRES_USER=admin
             - POSTGRES_PASSWORD=admin
+            - POSTGRES_SHARED_BUFFERS=2GB
+            - POSTGRES_WORK_MEM=256MB
+            - POSTGRES_EFFECTIVE_CACHE_SIZE=4GB
           logging:
             options:
               max-size: 10m
