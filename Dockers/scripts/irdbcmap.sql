@@ -61,6 +61,12 @@ insert into extra_config_civic_num(civic_num_source) values ('Open Street Map');
 ************ TABELLE DI APPOGGIO ************
 *********************************************/
 
+--Eliminazione dei nodi che non sono all'interno del confine della relazione
+delete from way_nodes wn
+where wn.node_id not in (select id
+                        from nodes 
+                        join extra_config_boundaries boundaries on ST_Covers(boundaries.boundary, nodes.geom));
+
 -- Salviamo in una tabella di appoggio tutti i nodi e rimuoviamo quelli che non corrispondono ad incroci (per snellire le triple generate)
 
 drop table if exists all_way_nodes;
@@ -71,7 +77,7 @@ create index on all_way_nodes (way_id);
 create index on all_way_nodes (node_id);
 create index on all_way_nodes (sequence_id);
 
-
+--Rimozione dei nodi che non sono incroci tra due strade o nella stessa strada
 delete from way_nodes w1 
 where w1.node_id not in (select w4.node_id
 						 from way_nodes w4
@@ -84,6 +90,7 @@ and w1.node_id in(select w2.node_id
 				from way_nodes w2
 				inner join way_nodes w3 on w2.way_id != w3.way_id AND w2.node_id = w3.node_id);
 
+--Inserimento dei nodi di inizio e fine di ogni strada
 CREATE TEMPORARY TABLE temp_way_nodes AS
 SELECT way_id, MAX(sequence_id) AS max_sequence_id, MIN(sequence_id) AS min_sequence_id
 FROM all_way_nodes
@@ -1953,8 +1960,7 @@ join relation_tags r_pedestrian on r.relation_id = r_pedestrian.relation_id and 
 
 --TEST aggiornamento linestring
 
-DELETE FROM RoadElementRoute
-WHERE true;
+DELETE FROM RoadElementRoute;
 
 create or replace view tmp_node_coord as
 select wn.way_id, wn.node_id, wn.sequence_id as local_id, w1.start_node as points from all_way_nodes wn
@@ -1975,10 +1981,22 @@ select way_id, array_agg(points) as points
 from tmp_node_coord0
 group by way_id;
 
+create or replace view tmp_array_idx as
+SELECT
+  t1.way_id, t1.sequence_id AS start_idx, t2.sequence_id AS end_idx
+FROM (SELECT way_id, sequence_id, ROW_NUMBER() OVER (ORDER BY way_id, sequence_id) AS row_number
+    FROM way_nodes_old) t1
+JOIN
+     (SELECT way_id, sequence_id, ROW_NUMBER() OVER (ORDER BY way_id, sequence_id) AS row_number
+    FROM way_nodes_old) t2 
+	ON t2.row_number = t1.row_number + 1 and t2.way_id = t1.way_id;
+
 create or replace view tmp_linestrings as 
-select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
-from tmp_way_array t1, extra_ways w1
-where t1.way_id = w1.global_id															 
+select 'OS' || lpad(ar.way_id::text,11,'0') || 'RE/' || wn.sequence_id as id, ST_MakeLine(t1.points[ar.start_idx : ar.end_idx + 1]) as linestring
+from tmp_way_array t1
+left join tmp_array_idx ar on t1.way_id = ar.way_id	
+join way_nodes_old as wno on ar.way_id = wno.way_id and wno.sequence_id = ar.start_idx
+join way_nodes as wn on wn.way_id=wno.way_id and wn.node_id = wno.node_id
 order by id;
 
 create or replace view tmp_cleaned as 
@@ -1987,12 +2005,14 @@ from tmp_linestrings
 where linestring <> '';
 
 insert into RoadElementRoute
-select CONCAT('http://www.disit.org/km4city/resource/OSM/', 42621), id, linestring from tmp_cleaned;
+select CONCAT('http://www.disit.org/km4city/resource/OSM/', :OSM_ID), id, linestring from tmp_cleaned;
 
-drop view if exists tmp_node_coord cascade;
-drop view if exists tmp_way_array cascade;
-drop view if exists tmp_linestrings cascade;
-drop view if exists tmp_cleaned cascade;
+-- drop view if exists tmp_node_coord cascade;
+-- drop view if exists tmp_node_coord0 cascade;
+-- drop view if exists tmp_way_array cascade;
+-- drop view if exists tmp_array_idx cascade;
+-- drop view if exists tmp_linestrings cascade;
+-- drop view if exists tmp_cleaned cascade;
 
 /********** RoadElement.StartsAtNode **********/
 
