@@ -111,9 +111,9 @@ def execute_shell_command(command, output=None, handle_exit_number=False ):
                 output.append(line.decode())
             else:
                 print(line.decode())
-    error_output = process.stderr.read().decode()
-    if error_output and handle_exit_number:
-        print(error_output)
+    if process.returncode != 0 and handle_exit_number:
+        print(process.stderr.read().decode())
+        print(f"Errore durante l'esecuzione del comando: {command}. Codice di uscita: {process.returncode}")
         sys.exit(1)
 
 
