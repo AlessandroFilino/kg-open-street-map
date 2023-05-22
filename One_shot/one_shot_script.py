@@ -119,6 +119,7 @@ def execute_shell_command(command, output=None, handle_exit_number=False):
     return_code = process.returncode
 
     if return_code != 0 and handle_exit_number:
+        error_output = stderr.decode().strip()
         print(f"Errore durante l'esecuzione del comando: {command}. Codice di uscita: {return_code}")
         sys.exit(1)
 
