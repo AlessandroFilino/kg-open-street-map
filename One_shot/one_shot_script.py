@@ -100,36 +100,21 @@ def download_map(osm_id, bbox):
 
     print("Mappa scaricata con successo")
 
-import subprocess
-
-def execute_shell_command(command, output=None, handle_exit_number=False):
+def execute_shell_command(command, output=None, handle_exit_number=False ):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     while process.poll() is None:
         while True:
             line = process.stdout.readline()
-            if not line:
-                break
-            if output is not None:
+            if not line: break
+            if output != None:
                 output.append(line.decode())
             else:
                 print(line.decode())
-
-    stdout, stderr = process.communicate()
-    return_code = process.returncode
-
-    if return_code != 0 and handle_exit_number:
-        error_output = stderr.decode().strip()
-        print(f"Errore durante l'esecuzione del comando: {command}. Codice di uscita: {return_code}")
+    error_output = process.stderr.read().decode()
+    if error_output and handle_exit_number:
+        print(error_output)
         sys.exit(1)
-
-    if output is not None:
-        for line in stdout.splitlines():
-            output.append(line.decode())
-    else:
-        for line in stdout.splitlines():
-            print(line.decode())
-
 
 
 BASE_DIR = pathlib.Path(__file__).parent.parent.resolve()
@@ -176,7 +161,7 @@ def main():
     inizialization_postgres = False
     os.chdir(f"{BASE_DIR}/Dockers")
 
-    if not os.path.exists(f"{BASE_DIR}/Dockers/postgresDB/"):
+    if not os.path.exists(f"{BASE_DIR}/Dockers/postgresDB"):
         inizialization_postgres = True
 
     execute_shell_command(["docker", "compose", "up", "-d"])
