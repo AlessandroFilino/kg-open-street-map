@@ -100,8 +100,12 @@ def download_map(osm_id, bbox):
 
     print("Mappa scaricata con successo")
 
-def execute_shell_command(command, output=None, handle_exit_number=False ):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def execute_shell_command(command, output=None, handle_exit_number=False):
+
+    if handle_exit_number==False:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+    else:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     while process.poll() is None:
         while True:
@@ -111,6 +115,7 @@ def execute_shell_command(command, output=None, handle_exit_number=False ):
                 output.append(line.decode())
             else:
                 print(line.decode())
+
     if process.returncode != 0 and handle_exit_number:
         print(process.stderr.read().decode())
         print(f"Errore durante l'esecuzione del comando: {command}. Codice di uscita: {process.returncode}")
