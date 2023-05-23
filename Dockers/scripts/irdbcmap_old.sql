@@ -2618,12 +2618,17 @@ select
 graph.graph_uri, 
 coalesce(resn.start_node_id, reen.end_node_id) p_where,
 case when case when position('@' in tag_oneway.v) = 0 then tag_oneway.v else trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) end <> 'no' and tag_cycleway_opposite.node_id is null then 'no' else 'yes' end p_access,
-case 
-when position('@' in tag_oneway.v) = 0 and ( tag_oneway.v = 'yes' or tag_oneway.v = '1' ) then 'backward' 
-when position('@' in tag_oneway.v) > 0 and ( trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1' ) then 'backward'
-when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward' 
+case
+when position('@' in tag_oneway.v) = 0 and (tag_oneway.v = 'yes' or tag_oneway.v = '1') then 'backward'
+when position('@' in tag_oneway.v) > 0 and (trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1') then 'backward'
+when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward'
 when position('@' in tag_oneway.v) > 0 and trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '-1' then 'forward'
-else unnest(array['forward','backward']) 
+when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v)))
+else
+case
+when tag_oneway.v IN ('forward', 'backward') then tag_oneway.v
+else 'forward'
+end
 end p_direction,
 case when t.description is not null then t.description when coalesce(tag_ped_cycle.v,'') = 'pedestrian' then 'foot' when coalesce(tag_ped_cycle.v,'') = 'cycleway' or tag_cycleway_opposite.node_id is not null then 'bicycle' else 'vehicle' end p_who,
 case when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) else null end p_condition
@@ -2647,12 +2652,17 @@ select distinct
 graph.graph_uri, 
 case when way_relation.relation_uri is null then 'OS' || lpad(ways.id::text,11,'0') || 'SR' else 'OS' || lpad(ways.id::text,11,'0') || 'RE/' || extra_ways.local_id end p_where, 
 case when case when position('@' in tag_oneway.v) = 0 then tag_oneway.v else trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) end <> 'no' and tag_cycleway_opposite.way_id is null then 'no' else 'yes' end p_access,
-case 
-when position('@' in tag_oneway.v) = 0 and ( tag_oneway.v = 'yes' or tag_oneway.v = '1' ) then 'backward' 
-when position('@' in tag_oneway.v) > 0 and ( trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1' ) then 'backward'
-when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward' 
+case
+when position('@' in tag_oneway.v) = 0 and (tag_oneway.v = 'yes' or tag_oneway.v = '1') then 'backward'
+when position('@' in tag_oneway.v) > 0 and (trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1') then 'backward'
+when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward'
 when position('@' in tag_oneway.v) > 0 and trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '-1' then 'forward'
-else unnest(array['forward','backward']) 
+when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v)))
+else
+case
+when tag_oneway.v IN ('forward', 'backward') then tag_oneway.v
+else 'forward'
+end
 end p_direction,
 case when t.description is not null then t.description when coalesce(tag_ped_cycle.v,'') = 'pedestrian' then 'foot' when coalesce(tag_ped_cycle.v,'') = 'cycleway' or tag_cycleway_opposite.way_id is not null then 'bicycle' else 'vehicle' end p_who,
 case when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) else null end p_condition
@@ -2696,12 +2706,17 @@ select distinct
 graph.graph_uri, 
 relations.relation_uri p_where,
 case when case when position('@' in tag_oneway.v) = 0 then tag_oneway.v else trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) end <> 'no' and tag_cycleway_opposite.relation_id is null then 'no' else 'yes' end p_access,
-case 
-when position('@' in tag_oneway.v) = 0 and ( tag_oneway.v = 'yes' or tag_oneway.v = '1' ) then 'backward' 
-when position('@' in tag_oneway.v) > 0 and ( trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1' ) then 'backward'
-when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward' 
+case
+when position('@' in tag_oneway.v) = 0 and (tag_oneway.v = 'yes' or tag_oneway.v = '1') then 'backward'
+when position('@' in tag_oneway.v) > 0 and (trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = 'yes' or trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '1') then 'backward'
+when position('@' in tag_oneway.v) = 0 and tag_oneway.v = '-1' then 'forward'
 when position('@' in tag_oneway.v) > 0 and trim(substring(tag_oneway.v,1,-1+position('@' in tag_oneway.v))) = '-1' then 'forward'
-else unnest(array['forward','backward']) 
+when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v)))
+else
+case
+when tag_oneway.v IN ('forward', 'backward') then tag_oneway.v
+else 'forward'
+end
 end p_direction,
 case when t.description is not null then t.description when coalesce(tag_ped_cycle.v,'') = 'pedestrian' then 'foot' when coalesce(tag_ped_cycle.v,'') = 'cycleway' or tag_cycleway_opposite.relation_id is not null then 'bicycle' else 'vehicle' end p_who,
 case when position('@' in tag_oneway.v) > 1 then trim(substring(tag_oneway.v, 1+position('@' in tag_oneway.v))) else null end p_condition
