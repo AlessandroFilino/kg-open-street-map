@@ -100,19 +100,23 @@ def download_map(osm_id, bbox):
 
     print("Mappa scaricata con successo")
 
-def execute_shell_command(command, output=None, handle_exit_number=False ):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def execute_shell_command(command, log_output=None, handle_exit_number=False):
+
+    if handle_exit_number==False:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+    else:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     while process.poll() is None:
         while True:
             line = process.stdout.readline()
             if not line: break
-            if output != None:
-                output.append(line.decode())
+            if log_output != None:
+                log_output.append(line.decode())
             else:
                 print(line.decode())
+
     if process.returncode != 0 and handle_exit_number:
-        print(process.stderr.read().decode())
         print(f"Errore durante l'esecuzione del comando: {command}. Codice di uscita: {process.returncode}")
         sys.exit(1)
 
@@ -176,7 +180,7 @@ def main():
             return    
         
         isReady = []
-        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], isReady)
+        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-postgres-1", "pg_isready" ], log_output=isReady)
         for line in isReady:
             if line.find("accepting connections") != -1:
                 if(inizialization_postgres):
