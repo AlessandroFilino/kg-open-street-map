@@ -5,4 +5,7 @@
 
 -    Handle controllare se la mappa è stata effettivamente creata in init o se si è verificato un errore
 
+-   commentare sql e python
+
+-  test sui grafi su virtuoso
 
