@@ -124,6 +124,7 @@ def execute_shell_command(command, log_output=None, handle_exit_number=False):
 BASE_DIR = pathlib.Path(__file__).parent.parent.resolve()
 
 def main():
+    # Recupero delle opzioni con il parsing
     args = parse_arguments()
     relation_name = None
     file_name = args["file_name"]
@@ -133,13 +134,15 @@ def main():
     map_type = None
     bbox = [0, 0, 0, 0]
     
+
     if args["load_to_rdf"] != None:
         graph_name = args["load_to_rdf"][0]
 
     if args["relation_name"] != None:
         relation_name = args["relation_name"][0]
 
-
+    # Recupero della bbox della mappa tramite osm_id o relation_name, 
+    # nel secondo caso viene dedotto anche l'osm_id basandosi sulla relazione più importante con quel nome
     if relation_name != None:
         relation_data = get_relation_data_by_name(relation_name)
         osm_id = relation_data["osm_id"]
@@ -148,7 +151,7 @@ def main():
         relation_data = get_relation_data_by_osmid(osm_id)
     bbox = relation_data["boundingbox"]
 
-
+    # Se file_name è specificato si verifica che la mappa esista
     if file_name != None:
         file_name = file_name[0]
         map_type = "pbf"
@@ -156,12 +159,13 @@ def main():
         if not os.path.exists(f"{BASE_DIR}/Dockers/maps/{file_name}"):
             print(f"Impossibile trovare la mappa in {BASE_DIR}/Dockers/maps/{file_name}")
             exit(-1)
-
+    # Se non è specificato file_name la mappa viene scaricata automaticamente
     else:
         download_map(osm_id, bbox)
         file_name = f"{osm_id}.osm"
         map_type = "osm"
 
+    # Avviamo i container e attendiamo che postgres sia inizializzato e pronto a ricevere connessioni
     inizialization_postgres = False
     os.chdir(f"{BASE_DIR}/Dockers")
 
@@ -176,7 +180,7 @@ def main():
         time.sleep(1)
         timeout += 1
         if (timeout > 60):
-            print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 30 s)")
+            print("Errore container postgres non è pronto a ricevere connessioni. (TIMEOUT: 60 s)")
             return    
         
         isReady = []
@@ -190,14 +194,16 @@ def main():
                 print("Container postgress avviato correttamente")
                 ready_to_accept_conn = True
                 break
-        
+    # Effettuiamo l'inizializazione del database su postgres rendendolo pronto a ricevere i dati postgis
     execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", "/home/scripts/init.sh"], handle_exit_number=True)
+    # Effettuiamo il load della mappa e l'ottimizzazione del db
     file_name_cleaned = file_name.split(".")[0]
-    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"])
-    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"])
+    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_map.sh {osm_id} {file_name_cleaned} {map_type} {float(bbox[0])} {float(bbox[1])} {float(bbox[2])} {float(bbox[3])}"], handle_exit_number=True)
+    # Eseguiamo una serie di query sul db e la triplificazione 
+    execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/irdbcmap.sh {osm_id} {file_name_cleaned} {generate_old}"], handle_exit_number=True)
 
+    # Se è specificato un grafo , le triple verrano caricate direttamente su di esso nel container con virtuoso rdf store
     if graph_name != None:
-        # TODO inserire controllo sul file .n3 per verificare che sia stato generato
         path_in_virtuoso = f"{BASE_DIR}/Dockers/virtuoso_data/{osm_id}" 
         if os.path.exists(path_in_virtuoso):
             for triple in os.listdir(path_in_virtuoso):
@@ -212,5 +218,5 @@ if __name__ == "__main__":
     main()
 
 
-
+# Es di run 
 # python3 One_shot/one_shot_script.py -r montemignaio -l http://example.org/test1
