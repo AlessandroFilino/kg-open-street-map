@@ -61,11 +61,16 @@ insert into extra_config_civic_num(civic_num_source) values ('Open Street Map');
 ************ TABELLE DI APPOGGIO ************
 *********************************************/
 
---Eliminazione dei nodi che non sono all'interno del confine della relazione
-delete from way_nodes wn
+drop table if exists way_nodes_out;
+create table way_nodes_out as 
+select * from way_nodes wn
 where wn.node_id not in (select id
                         from nodes 
                         join extra_config_boundaries boundaries on ST_Covers(boundaries.boundary, nodes.geom));
+
+--Eliminazione dei nodi che non sono all'interno del confine della relazione
+delete from way_nodes wn
+where wn.node_id in (select wo.node_id from way_nodes_out wo);
 
 -- Salviamo in una tabella di appoggio tutti i nodi e rimuoviamo quelli che non corrispondono ad incroci (per snellire le triple generate)
 
@@ -112,6 +117,20 @@ WHERE wn.node_id IS NULL
     AND (w1.sequence_id = w2.max_sequence_id OR w1.sequence_id = w2.min_sequence_id);
 
 DROP TABLE temp_way_nodes;
+
+-- Inserimento dei nodi immediatamente precedenti o successivi ai nodi rimossi (bordi del confine)
+drop table if exists way_nodes_conf;
+create table way_nodes_conf as
+select aw.way_id, aw.node_id, aw.sequence_id  from all_way_nodes aw
+join way_nodes_out next_node on aw.way_id = next_node.way_id and aw.sequence_id = next_node.sequence_id - 2
+join all_way_nodes aw1 on aw1.way_id = aw.way_id and aw1.sequence_id = aw.sequence_id + 1
+union
+select aw2.way_id, aw2.node_id, aw2.sequence_id from all_way_nodes aw2
+join way_nodes_out prev_node on aw2.way_id = prev_node.way_id and aw2.sequence_id = prev_node.sequence_id + 1;
+
+insert into way_nodes select * 
+from way_nodes_conf
+ON CONFLICT DO NOTHING;
 
 create table way_nodes_old as
 select * from way_nodes;
@@ -1988,7 +2007,8 @@ select way_id, array_agg(points) as points
 from tmp_node_coord0
 group by way_id;
 
-create or replace view tmp_array_idx as
+drop table if exists tmp_array_idx; 
+create table tmp_array_idx as
 SELECT
   t1.way_id, t1.sequence_id AS start_idx, t2.sequence_id AS end_idx
 FROM (SELECT way_id, sequence_id, ROW_NUMBER() OVER (ORDER BY way_id, sequence_id) AS row_number
@@ -1998,11 +2018,34 @@ JOIN
     FROM way_nodes_old) t2 
 	ON t2.row_number = t1.row_number + 1 and t2.way_id = t1.way_id;
 
+update tmp_array_idx as ar
+set end_idx = ar.start_idx
+from (select ar1.way_id, ar1.start_idx, ar1.end_idx from tmp_array_idx ar1
+	  join way_nodes_conf wc on wc.way_id = ar1.way_id and wc.sequence_id = ar1.start_idx
+	  join way_nodes_conf wc1 on wc1.way_id = ar1.way_id and wc1.sequence_id = ar1.end_idx) as subquery
+where ar.way_id = subquery.way_id and ar.start_idx = subquery.start_idx and ar.end_idx = subquery.end_idx;
+
+create or replace view tmp_sequence_to_idx as
+select subquery.way_id, subquery.local_id, subquery.idx 
+from (select tc.way_id, tc.local_id ,ROW_NUMBER() over(partition by tc.way_id order by tc.local_id)  as idx
+from tmp_node_coord0 tc)subquery
+order by subquery.local_id;
+
+create or replace view tmp_array_idx1 as
+SELECT
+	ai.way_id,
+	old.local_id as old_idx,
+  (SELECT idx FROM tmp_sequence_to_idx WHERE way_id = ai.way_id and local_id = ai.start_idx) AS start_idx,
+  (SELECT idx FROM tmp_sequence_to_idx WHERE way_id = ai.way_id and local_id = ai.end_idx) AS end_idx
+FROM tmp_array_idx ai
+join tmp_sequence_to_idx old on old.way_id = ai.way_id and old.local_id = ai.start_idx
+order by start_idx;
+
 create or replace view tmp_linestrings as 
-select 'OS' || lpad(ar.way_id::text,11,'0') || 'RE/' || wn.sequence_id as id, ST_MakeLine(t1.points[ar.start_idx : ar.end_idx + 1]) as linestring
+select 'OS' || lpad(ar.way_id::text,11,'0') || 'RE/' || wn.sequence_id as id, ar.start_idx, ar.end_idx, ST_MakeLine(t1.points[ar.start_idx : ar.end_idx + 1]) as linestring
 from tmp_way_array t1
-left join tmp_array_idx ar on t1.way_id = ar.way_id	
-join way_nodes_old as wno on ar.way_id = wno.way_id and wno.sequence_id = ar.start_idx
+left join tmp_array_idx1 ar on t1.way_id = ar.way_id	
+join way_nodes_old as wno on ar.way_id = wno.way_id and wno.sequence_id = ar.old_idx
 join way_nodes as wn on wn.way_id=wno.way_id and wn.node_id = wno.node_id
 order by id;
 

@@ -1,43 +1,24 @@
-select * from all_way_nodes
-where way_id = 422659696;
+create or replace view tmp_sequence_to_idx as
+select subquery.way_id, subquery.local_id, subquery.idx 
+from (select tc.way_id, tc.local_id ,ROW_NUMBER() over(partition by tc.way_id order by tc.local_id)  as idx
+from tmp_node_coord0 tc)subquery
+order by subquery.local_id;
 
-select * from all_extra_ways
-where global_id = 422659696;
 
-
--- 
-create or replace view tmp_node_coord as
-select wn.way_id, wn.node_id, wn.sequence_id as local_id, w1.start_node as points from all_way_nodes wn
-left join all_extra_ways w1 on w1.global_id = wn.way_id and w1.prev_node_id = wn.node_id
-where w1.start_node is not null
-union
-select wn.way_id, wn.node_id, wn.sequence_id as local_id, w2.end_node as points from all_way_nodes wn
-left join all_extra_ways w2 on w2.global_id = wn.way_id and w2.next_node_id = wn.node_id
-where w2.end_node is not null
-order by local_id;
-
---
-
-create or replace view tmp_node_coord0 as 
-select * from tmp_node_coord
-order by way_id, local_id;
-
-create or replace view tmp_way_array as
-select way_id, array_agg(points) as points
-from tmp_node_coord0
-group by way_id;
+create or replace view tmp_array_idx1 as
+SELECT
+	ai.way_id,
+	old.local_id as old_idx,
+  (SELECT idx FROM tmp_sequence_to_idx WHERE way_id = ai.way_id and local_id = ai.start_idx) AS start_idx,
+  (SELECT idx FROM tmp_sequence_to_idx WHERE way_id = ai.way_id and local_id = ai.end_idx) AS end_idx
+FROM tmp_array_idx ai
+join tmp_sequence_to_idx old on old.way_id = ai.way_id and old.local_id = ai.start_idx
+order by start_idx;
 
 create or replace view tmp_linestrings as 
-select 'OS' || lpad(w1.global_id::text,11,'0') || 'RE/' || w1.local_id as id, ST_MakeLine(t1.points[array_position(t1.points, w1.start_node) : array_position(t1.points, w1.end_node)]) as linestring
-from tmp_way_array t1, extra_ways w1
-where t1.way_id = w1.global_id															 
+select 'OS' || lpad(ar.way_id::text,11,'0') || 'RE/' || wn.sequence_id as id, ar.start_idx, ar.end_idx, ST_MakeLine(t1.points[ar.start_idx : ar.end_idx + 1]) as linestring
+from tmp_way_array t1
+left join tmp_array_idx1 ar on t1.way_id = ar.way_id	
+join way_nodes_old as wno on ar.way_id = wno.way_id and wno.sequence_id = ar.old_idx
+join way_nodes as wn on wn.way_id=wno.way_id and wn.node_id = wno.node_id
 order by id;
-
-create or replace view tmp_cleaned as 
-select id, linestring 
-from tmp_linestrings																											 
-where linestring <> '';
-
-insert into RoadElementRoute
-select CONCAT('http://www.disit.org/km4city/resource/OSM/', 42621), id, linestring from tmp_cleaned;
-
