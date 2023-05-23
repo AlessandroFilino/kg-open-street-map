@@ -100,31 +100,21 @@ def download_map(osm_id, bbox):
 
     print("Mappa scaricata con successo")
 
-def execute_shell_command(command, output=None, handle_exit_number=False):
+def execute_shell_command(command, output=None, handle_exit_number=False ):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    while True:
-        line = process.stdout.readline()
-        if not line:
-            break
-        if output is not None:
-            output.append(line.decode())
-        else:
-            print(line.decode())
-    
-    while handle_exit_number:
-        error_line = process.stderr.readline()
-        if not error_line:
-            break
-        error_output = error_line.decode().strip()
-        if error_output:
-            print("Errore:", error_output)
-            sys.exit(1) 
-
-    return_code = process.wait()
-    if return_code != 0:
-        sys.exit(return_code)
-        
+    while process.poll() is None:
+        while True:
+            line = process.stdout.readline()
+            if not line: break
+            if output != None:
+                output.append(line.decode())
+            else:
+                print(line.decode())
+    if process.returncode != 0 and handle_exit_number:
+        print(process.stderr.read().decode())
+        print(f"Errore durante l'esecuzione del comando: {command}. Codice di uscita: {process.returncode}")
+        sys.exit(1)
 
 
 BASE_DIR = pathlib.Path(__file__).parent.parent.resolve()
@@ -171,10 +161,10 @@ def main():
     inizialization_postgres = False
     os.chdir(f"{BASE_DIR}/Dockers")
 
-    if not os.listdir(f"{BASE_DIR}/Dockers/postgresDB/"):
+    if not os.path.exists(f"{BASE_DIR}/Dockers/postgresDB"):
         inizialization_postgres = True
 
-    execute_shell_command(["docker", "compose", "up", "-d"],handle_exit_number=False)
+    execute_shell_command(["docker", "compose", "up", "-d"])
 
     timeout = -1
     ready_to_accept_conn = False
@@ -212,7 +202,7 @@ def main():
 
         os.mkdir(path_in_virtuoso)
         shutil.copy2(f"{BASE_DIR}/Dockers/maps/{osm_id}/{osm_id}.n3", path_in_virtuoso)
-        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_to_virtuoso.sh {osm_id} {graph_name}"], handle_exit_number=True)
+        execute_shell_command(["docker", "exec", "-it", "kg-open-street-map-ubuntu-1", "sh", "-c", f"/home/scripts/load_to_virtuoso.sh {osm_id} {graph_name}"])
 
 if __name__ == "__main__":
     main()
