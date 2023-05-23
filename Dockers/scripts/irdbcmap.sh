@@ -8,6 +8,7 @@ OSM_ID=$1
 RELATION_NAME=$2
 GENERATE_OLD=$3
 
+# Generazione delle triple senza semplificazione se l'utente l'ha richiesto
 if [ $GENERATE_OLD = "True" ]; then
     psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME  -f /home/scripts/irdbcmap_old.sql -v OSM_ID=$OSM_ID ||
   { echo "Errore durante l'esecuzione di /home/scripts/irdbcmap_old.sql sul db"; exit 1; } 
@@ -19,8 +20,9 @@ if [ $GENERATE_OLD = "True" ]; then
     rm "$OSM_ID"_old.drt "$OSM_ID"_old.cln
 fi
 
+# Generazione delle triple con semplificazione
 psql postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME  -f /home/scripts/irdbcmap.sql -v OSM_ID=$OSM_ID ||
-  { echo "Errore durante l'esecuzione di /home/scripts/irdbcmap_old.sql sul db"; exit 1; } 
+  { echo "Errore durante l'esecuzione di /home/scripts/irdbcmap.sql sul db"; exit 1; } 
 /home/scripts/sparqlify.sh -m /home/scripts/irdbcmap.sml -h postgres -d $DB_NAME -U $DB_USER -W $DB_PASSWORD -o ntriples --dump > /home/maps/$OSM_ID/$OSM_ID.drt ||
   { echo "Errore durante l'esecuzione di /home/scripts/sparqlify.sh"; exit 1; } 
 cd /home/maps/$OSM_ID/

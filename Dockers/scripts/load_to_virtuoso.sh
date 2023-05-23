@@ -22,6 +22,7 @@ echo "DELETE FROM DB.DBA.LOAD_LIST WHERE ll_file='$RELATION_NAME/$RELATION_NAME.
 
 echo "\n\nCARICAMENTO TRIPLE DA FILE : $RELATION_NAME.n3 NEL GRAFO : $GRAPH_NAME\n"
 
+# Si effettua il caricamento delle triple sul grafo
 echo "ld_dir('$RELATION_NAME', '$RELATION_NAME.n3', '$GRAPH_NAME');" | isql-vt isql-vt -H kg-open-street-map-virtuoso-1 -P $VIRTUOSO_PSW
 echo "rdf_loader_run();" | isql-vt isql-vt -H kg-open-street-map-virtuoso-1 -P $VIRTUOSO_PSW
 

@@ -135,6 +135,7 @@ ON CONFLICT DO NOTHING;
 create table way_nodes_old as
 select * from way_nodes;
 
+-- Riassegnamo i sequence_id in base ai nodi rimasti 
 create or replace view tmp_view as
 select way_id,node_id,(row_number() over(partition by way_id order by sequence_id) -1)as sequence_id
 from way_nodes;
@@ -151,10 +152,6 @@ from tmp_db;
 
 drop table if exists tmp_db;
 drop view if exists tmp_view;
-
--- ____________________________________________________________
-
-
 
 
 -- Esplosione delle way
@@ -1984,10 +1981,11 @@ join relation_tags r_type on r.relation_id = r_type.relation_id and r_type.k = '
 join relation_tags r_pedestrian on r.relation_id = r_pedestrian.relation_id and r_pedestrian.k = 'highway' and r_pedestrian.v = 'pedestrian'
 ;
 
---TEST aggiornamento linestring
+-- Aggiornamento dei linestring
 
 DELETE FROM RoadElementRoute;
 
+-- Coordinate dei punti per ogni nodo di ogni strada
 create or replace view tmp_node_coord as
 select wn.way_id, wn.node_id, wn.sequence_id as local_id, w1.start_node as points from all_way_nodes wn
 left join all_extra_ways w1 on w1.global_id = wn.way_id and w1.prev_node_id = wn.node_id
@@ -2002,13 +2000,15 @@ create or replace view tmp_node_coord0 as
 select * from tmp_node_coord
 order by way_id, local_id;
 
+-- Array delle coordinate per ogni strada
 create or replace view tmp_way_array as
 select way_id, array_agg(points) as points
 from tmp_node_coord0
 group by way_id;
 
-drop table if exists tmp_array_idx; 
-create table tmp_array_idx as
+-- Indici dei nodi tra cui tracciare i linestring 
+drop table if exists tmp_node_idx; 
+create table tmp_node_idx as
 SELECT
   t1.way_id, t1.sequence_id AS start_idx, t2.sequence_id AS end_idx
 FROM (SELECT way_id, sequence_id, ROW_NUMBER() OVER (ORDER BY way_id, sequence_id) AS row_number
@@ -2018,33 +2018,36 @@ JOIN
     FROM way_nodes_old) t2 
 	ON t2.row_number = t1.row_number + 1 and t2.way_id = t1.way_id;
 
-update tmp_array_idx as ar
+-- Aggiornamento degli indici per evitare la creazione di linestring quando la strada è tagliata dal confine della relazione
+update tmp_node_idx as ar
 set end_idx = ar.start_idx
-from (select ar1.way_id, ar1.start_idx, ar1.end_idx from tmp_array_idx ar1
+from (select ar1.way_id, ar1.start_idx, ar1.end_idx from tmp_node_idx ar1
 	  join way_nodes_conf wc on wc.way_id = ar1.way_id and wc.sequence_id = ar1.start_idx
 	  join way_nodes_conf wc1 on wc1.way_id = ar1.way_id and wc1.sequence_id = ar1.end_idx) as subquery
 where ar.way_id = subquery.way_id and ar.start_idx = subquery.start_idx and ar.end_idx = subquery.end_idx;
 
+-- Mapping tra gli indici dei nodi e le rispettive posizioni nell'array di tmp_way_array
 create or replace view tmp_sequence_to_idx as
 select subquery.way_id, subquery.local_id, subquery.idx 
 from (select tc.way_id, tc.local_id ,ROW_NUMBER() over(partition by tc.way_id order by tc.local_id)  as idx
 from tmp_node_coord0 tc)subquery
 order by subquery.local_id;
 
-create or replace view tmp_array_idx1 as
+create or replace view tmp_array_idx as
 SELECT
 	ai.way_id,
 	old.local_id as old_idx,
   (SELECT idx FROM tmp_sequence_to_idx WHERE way_id = ai.way_id and local_id = ai.start_idx) AS start_idx,
   (SELECT idx FROM tmp_sequence_to_idx WHERE way_id = ai.way_id and local_id = ai.end_idx) AS end_idx
-FROM tmp_array_idx ai
+FROM tmp_node_idx ai
 join tmp_sequence_to_idx old on old.way_id = ai.way_id and old.local_id = ai.start_idx
 order by start_idx;
 
+-- Generazione dei Linestring
 create or replace view tmp_linestrings as 
 select 'OS' || lpad(ar.way_id::text,11,'0') || 'RE/' || wn.sequence_id as id, ar.start_idx, ar.end_idx, ST_MakeLine(t1.points[ar.start_idx : ar.end_idx + 1]) as linestring
 from tmp_way_array t1
-left join tmp_array_idx1 ar on t1.way_id = ar.way_id	
+left join tmp_array_idx ar on t1.way_id = ar.way_id	
 join way_nodes_old as wno on ar.way_id = wno.way_id and wno.sequence_id = ar.old_idx
 join way_nodes as wn on wn.way_id=wno.way_id and wn.node_id = wno.node_id
 order by id;
@@ -2057,12 +2060,13 @@ where linestring <> '';
 insert into RoadElementRoute
 select CONCAT('http://www.disit.org/km4city/resource/OSM/', :OSM_ID), id, linestring from tmp_cleaned;
 
--- drop view if exists tmp_node_coord cascade;
--- drop view if exists tmp_node_coord0 cascade;
--- drop view if exists tmp_way_array cascade;
--- drop view if exists tmp_array_idx cascade;
--- drop view if exists tmp_linestrings cascade;
--- drop view if exists tmp_cleaned cascade;
+drop view if exists tmp_node_coord cascade;
+drop view if exists tmp_node_coord0 cascade;
+drop view if exists tmp_way_array cascade;
+drop table if exists tmp_node_idx;
+drop view if exists tmp_array_idx cascade;
+drop view if exists tmp_linestrings cascade;
+drop view if exists tmp_cleaned cascade;
 
 /********** RoadElement.StartsAtNode **********/
 
