@@ -1961,29 +1961,9 @@ select distinct cfg.graph_uri, 'OS' || lpad(t.global_way_id::text,11,'0') || 'RE
 
 /********** RoadElement.Route **********/
 
--- drop table if exists RoadElementRoute ;
-
--- Create Table RoadElementRoute As
--- select distinct graph_uri, 'OS' || lpad(e.global_way_id::text,11,'0') || 'RE/' || e.local_way_id id, ST_MakeLine(extra_ways.start_node,extra_ways.end_node) route
--- from ways 
---   join extra_config_graph cfg on 1=1
--- join extra_toponym_city e on ways.id = e.global_way_id 
--- join way_tags highway on ways.id = highway.way_id and highway.k = 'highway' and highway.v <> 'proposed'
--- join extra_ways on global_id = e.global_way_id and local_id = e.local_way_id
--- union -- pedestrian (squares)
--- select distinct graph_uri, 'OS' || lpad(e.global_way_id::text,11,'0') || 'RE/' || e.local_way_id id, ST_MakeLine(extra_ways.start_node,extra_ways.end_node) route
--- from ways 
--- join extra_config_graph cfg on 1=1
--- join extra_toponym_city e on ways.id = e.global_way_id 
--- join extra_ways on global_id = e.global_way_id and local_id = e.local_way_id
--- join relation_members r on ways.id = r.member_id and r.member_type = 'W' 
--- join relation_tags r_type on r.relation_id = r_type.relation_id and r_type.k = 'type' and r_type.v = 'multipolygon'
--- join relation_tags r_pedestrian on r.relation_id = r_pedestrian.relation_id and r_pedestrian.k = 'highway' and r_pedestrian.v = 'pedestrian'
--- ;
 
 -- Aggiornamento dei linestring
 
--- DELETE FROM RoadElementRoute;
 
 -- Coordinate dei punti per ogni nodo di ogni strada
 create or replace view tmp_node_coord as
