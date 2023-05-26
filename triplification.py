@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Es di run 
+# python3 triplification.py -r montemignaio -l http://example.org/test1
 import argparse
 import requests
 import os
@@ -121,7 +123,7 @@ def execute_shell_command(command, log_output=None, handle_exit_number=False):
         sys.exit(1)
 
 
-BASE_DIR = pathlib.Path(__file__).parent.parent.resolve()
+BASE_DIR = pathlib.Path(__file__).parent.resolve()
 
 def main():
     # Recupero delle opzioni con il parsing
@@ -216,7 +218,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# Es di run 
-# python3 One_shot/one_shot_script.py -r montemignaio -l http://example.org/test1
