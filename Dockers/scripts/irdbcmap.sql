@@ -2060,7 +2060,7 @@ where linestring <> '';
 -- Generazione dei RoadElementRoute
 drop table if exists RoadElementRoute ;
 create table RoadElementRoute as
-select CONCAT('http://www.disit.org/km4city/resource/OSM/', :OSM_ID), id, linestring as route
+select CONCAT('http://www.disit.org/km4city/resource/OSM/', :OSM_ID) as graph_uri, id, linestring as route
 from tmp_cleaned;
 
 drop view if exists tmp_node_coord cascade;
