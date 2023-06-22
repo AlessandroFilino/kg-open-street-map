@@ -2025,7 +2025,7 @@ order by start_idx;
 
 -- Generazione dei Linestring
 create or replace view tmp_linestrings as 
-select 'OS' || lpad(ar.way_id::text,11,'0') || 'RE/' || wn.sequence_id as id, ar.start_idx, ar.end_idx, ST_MakeLine(t1.points[ar.start_idx : ar.end_idx + 1]) as linestring
+select 'OS' || lpad(ar.way_id::text,11,'0') || 'RE/' || wn.sequence_id as id, ar.start_idx, ar.end_idx, ST_MakeLine(t1.points[ar.start_idx : ar.end_idx]) as linestring
 from tmp_way_array t1
 left join tmp_array_idx ar on t1.way_id = ar.way_id	
 join way_nodes_old as wno on ar.way_id = wno.way_id and wno.sequence_id = ar.old_idx
@@ -2033,9 +2033,11 @@ join way_nodes as wn on wn.way_id=wno.way_id and wn.node_id = wno.node_id
 order by id;
 
 create or replace view tmp_cleaned as 
-select id, linestring 
-from tmp_linestrings																											 
-where linestring <> '';
+SELECT t1.id, t1.linestring 
+FROM tmp_linestrings t1
+LEFT JOIN tmp_linestrings t2
+    ON t1.linestring = t2.linestring AND t1.id > t2.id
+WHERE t2.id IS NULL and t1.linestring <> '';
 
 -- Generazione dei RoadElementRoute
 drop table if exists RoadElementRoute ;
